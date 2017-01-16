@@ -44,7 +44,7 @@ namespace CryptoKnight.Client.UI
                 permSet,
                 strongName);
 
-            foreach (var file in new DirectoryInfo("./Plugin").GetFiles("*.dll"))
+            foreach (var file in new DirectoryInfo(".").GetFiles("*.dll"))
             {
                 var assemblyName = file.Name.Replace(".dll", "");
                 Console.WriteLine($@"Loaded DLL: {assemblyName}");
