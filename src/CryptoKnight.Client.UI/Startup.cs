@@ -52,10 +52,10 @@ namespace CryptoKnight.Client.UI
             {
                 var assemblyName = file.Name.Replace(".dll", "");
                 Console.WriteLine($@"Loaded DLL: {assemblyName}");
-                var addIn = LoadAddIn(assemblyName, pluginSandboxDomain);
-                if (addIn == null) continue;
+                var plugin = LoadAddIn(assemblyName, pluginSandboxDomain);
+                if (plugin == null) continue;
 
-                Console.WriteLine($@"{file.Name}: {addIn.Decrypt(addIn.Encrypt("Blob"))}");
+                Console.WriteLine($@"{file.Name}: {plugin.Decrypt(plugin.Encrypt("Blob"))}");
             }
 
         }
