@@ -12,13 +12,19 @@ namespace CryptoKnight.Server.Test
             Email = "admin@host.com",
             PasswordHash = "test"
         };
+        private static readonly User User = new User
+        {
+            Email = "user@host.com",
+            PasswordHash = "user"
+        };
         private static ILicenseService licencService;
+        private static IAuthService authService;
 
         [TestMethod]
         public void TestActivations()
         {
             licencService = new DefaultLicenseServiceImpl();
-            for (var i = 0; i < 10; i++)
+            for (var i = 0; i < LicenseGroup.MaxLicenseKeys; i++)
             {
                 Assert.IsNotNull(licencService.RequestLicenseKey(Admin));
             }
@@ -29,7 +35,17 @@ namespace CryptoKnight.Server.Test
         public void TestKeyHash()
         {
             licencService = new DefaultLicenseServiceImpl();
-            System.Console.WriteLine(licencService.RequestLicenseKey(Admin).Code);
+            System.Console.WriteLine(licencService.RequestLicenseKey(User).Code);
+        }
+
+        [TestMethod]
+        public void TestSingleLogin()
+        {
+            licencService = new DefaultLicenseServiceImpl();
+            authService = new DefaultAuthService();
+            var key = licencService.RequestLicenseKey(User);
+            Assert.IsTrue(authService.Login(User, key));
+            Assert.IsFalse(authService.Login(User, key));
         }
     }
 }

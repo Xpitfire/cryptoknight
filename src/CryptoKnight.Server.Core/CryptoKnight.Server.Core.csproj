@@ -40,8 +40,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DefaultAuthService.cs" />
     <Compile Include="DefaultLicenseServiceImpl.cs" />
+    <Compile Include="IAuthService.cs" />
     <Compile Include="ILicenseService.cs" />
+    <Compile Include="LicenseRuntime.cs" />
+    <Compile Include="KeyStore.cs" />
     <Compile Include="LicenseGroup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="User.cs" />

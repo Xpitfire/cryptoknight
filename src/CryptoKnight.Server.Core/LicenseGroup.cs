@@ -10,7 +10,7 @@ namespace CryptoKnight.Server.Core
     [Serializable]
     public class LicenseGroup
     {
-        public const int MaxLicenseKeys = 10;
+        public const int MaxLicenseKeys = 3;
 
         public IList<Key> Keys { get; } = new List<Key>();
         public int Available { get; set; } = MaxLicenseKeys;
