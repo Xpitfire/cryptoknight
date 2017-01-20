@@ -6,8 +6,6 @@ using System.Reflection;
 using System.Security;
 using System.Security.Permissions;
 using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
 using CryptoKnight.Client.Core.Plugin;
 
 namespace CryptoKnight.Client.UI
@@ -34,7 +32,7 @@ namespace CryptoKnight.Client.UI
         {
             var permSet = new PermissionSet(PermissionState.None);
             permSet.AddPermission(new SecurityPermission(SecurityPermissionFlag.Execution));
-            AppDomainSetup ptInfo = new AppDomainSetup
+            var ptInfo = new AppDomainSetup
             {
                 ApplicationBase = "."
             };
@@ -54,10 +52,8 @@ namespace CryptoKnight.Client.UI
                 Console.WriteLine($@"Loaded DLL: {assemblyName}");
                 var plugin = LoadAddIn(assemblyName, pluginSandboxDomain);
                 if (plugin == null) continue;
-
                 yield return plugin;
             }
-
         }
     }
 }

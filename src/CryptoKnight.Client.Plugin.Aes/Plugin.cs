@@ -120,5 +120,10 @@ namespace CryptoKnight.Client.Plugin.Aes
             }
             return null;
         }
+
+        public override string ToString()
+        {
+            return "Test";
+        }
     }
 }

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -22,8 +24,6 @@ namespace CryptoKnight.Client.UI.ViewModel
     /// </summary>
     public class MainViewModel : ViewModelBase
     {
-        private IPlugin EncryptionPlugin { get; set; }
-        private byte[] EncryptedData { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
@@ -40,8 +40,14 @@ namespace CryptoKnight.Client.UI.ViewModel
             OpenCommand = new RelayCommand(OpenFileSelectionDialogAsync);
             EncryptCommand = new RelayCommand(EncryptTextAsync);
             DecryptCommand = new RelayCommand(DecryptTextAsync);
-            EncryptionPlugin = PluginFactory.Get().First();
 
+            EncryptionPlugins = PluginFactory.Get().ToList();
+            EncryptionOptions = new ObservableCollection<string>();
+            foreach (var plugin in EncryptionPlugins)
+            {
+                EncryptionOptions.Add(plugin.ToString());
+            }
+            CurrentEncryptionPlugin = EncryptionOptions.FirstOrDefault();
             Reset();
         }
 
@@ -50,20 +56,29 @@ namespace CryptoKnight.Client.UI.ViewModel
             await Task.Run(() =>
             {
                 if (string.IsNullOrEmpty(OriginalText)) return;
+                var plugin = LookupPlugin(CurrentEncryptionPlugin);
+                if (plugin == null) return;
                 EncryptedData = string.IsNullOrEmpty(ConvertedText)
-                    ? EncryptionPlugin.Encrypt(OriginalText)
-                    : EncryptionPlugin.Encrypt(ConvertedText);
+                    ? plugin.Encrypt(OriginalText)
+                    : plugin.Encrypt(ConvertedText);
                 ConvertedText = Encoding.UTF8.GetString(EncryptedData);
             });
+        }
+
+        private IPlugin LookupPlugin(string pluginName)
+        {
+            return EncryptionPlugins
+                .FirstOrDefault(plugin => plugin.ToString() == pluginName);
         }
 
         private async void DecryptTextAsync()
         {
             await Task.Run(() =>
             {
-                //if (OriginalText == null || OriginalText.Length <= 0) return;
                 if (EncryptedData == null || EncryptedData.Length <= 0) return;
-                ConvertedText = EncryptionPlugin.Decrypt(EncryptedData);
+                var plugin = LookupPlugin(CurrentEncryptionPlugin);
+                if (plugin == null) return;
+                ConvertedText = plugin.Decrypt(EncryptedData);
             });
         }
 
@@ -113,6 +128,11 @@ namespace CryptoKnight.Client.UI.ViewModel
             get { return _selectedFileLabel; }
             set { Set(ref _selectedFileLabel, value); }
         }
+
+        public string CurrentEncryptionPlugin { get; set; }
+        private byte[] EncryptedData { get; set; }
+        public ObservableCollection<string> EncryptionOptions { get; set; }
+        private IList<IPlugin> EncryptionPlugins { get; set; }
 
 
         public RelayCommand OpenCommand { get; private set; }
