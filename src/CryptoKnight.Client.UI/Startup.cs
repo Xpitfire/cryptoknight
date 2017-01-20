@@ -14,6 +14,9 @@ namespace CryptoKnight.Client.UI
 {
     class Startup
     {
+
+        public const string PluginSandboxDomainName = "PluginSandboxDomain";
+
         static IPlugin LoadAddIn(string assemblyName, AppDomain sandboxDomain)
         {
             var assembly = Assembly.Load(assemblyName);
@@ -38,7 +41,8 @@ namespace CryptoKnight.Client.UI
 
             var strongName = typeof(IPlugin).Assembly.Evidence.GetHostEvidence<StrongName>();
 
-            var sandboxDomain = AppDomain.CreateDomain("SandboxDomain",
+            var pluginSandboxDomain = AppDomain.CreateDomain(
+                PluginSandboxDomainName,
                 AppDomain.CurrentDomain.Evidence,
                 ptInfo,
                 permSet,
@@ -48,7 +52,7 @@ namespace CryptoKnight.Client.UI
             {
                 var assemblyName = file.Name.Replace(".dll", "");
                 Console.WriteLine($@"Loaded DLL: {assemblyName}");
-                var addIn = LoadAddIn(assemblyName, sandboxDomain);
+                var addIn = LoadAddIn(assemblyName, pluginSandboxDomain);
                 if (addIn == null) continue;
 
                 Console.WriteLine($@"{file.Name}: {addIn.Decrypt(addIn.Encrypt("Blob"))}");

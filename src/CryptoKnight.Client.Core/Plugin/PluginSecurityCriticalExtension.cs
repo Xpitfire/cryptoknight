@@ -12,7 +12,7 @@ namespace CryptoKnight.Client.Core.Plugin
     public static class PluginSecurityCriticalExtension
     {
         [SecuritySafeCritical]
-        public static string GetInfo(this IPlugin addIn)
+        public static string GetInfo(this IPlugin plugin)
         {
             var assembly = Assembly.GetExecutingAssembly();
             var sb = new StringBuilder();
