@@ -23,7 +23,6 @@ namespace CryptoKnight.Client.UI
         public MainWindow()
         {
             InitializeComponent();
-            Startup.Start();
         }
     }
 }

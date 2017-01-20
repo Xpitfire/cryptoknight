@@ -12,12 +12,12 @@ using CryptoKnight.Client.Core.Plugin;
 
 namespace CryptoKnight.Client.UI
 {
-    class Startup
+    class PluginFactory
     {
 
-        public const string PluginSandboxDomainName = "PluginSandboxDomain";
+        private const string PluginSandboxDomainName = "PluginSandboxDomain";
 
-        static IPlugin LoadAddIn(string assemblyName, AppDomain sandboxDomain)
+        private static IPlugin LoadAddIn(string assemblyName, AppDomain sandboxDomain)
         {
             var assembly = Assembly.Load(assemblyName);
             foreach (var type in assembly.GetTypes())
@@ -30,7 +30,7 @@ namespace CryptoKnight.Client.UI
             return null;
         }
 
-        public static void Start()
+        public static IEnumerable<IPlugin> Get()
         {
             var permSet = new PermissionSet(PermissionState.None);
             permSet.AddPermission(new SecurityPermission(SecurityPermissionFlag.Execution));
@@ -55,7 +55,7 @@ namespace CryptoKnight.Client.UI
                 var plugin = LoadAddIn(assemblyName, pluginSandboxDomain);
                 if (plugin == null) continue;
 
-                Console.WriteLine($@"{file.Name}: {plugin.Decrypt(plugin.Encrypt("Blob"))}");
+                yield return plugin;
             }
 
         }
