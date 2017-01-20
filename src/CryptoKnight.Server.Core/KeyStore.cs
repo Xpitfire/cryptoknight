@@ -6,6 +6,7 @@ namespace CryptoKnight.Server.Core
 {
     internal static class KeyStore
     {
+        // TODO: Use / load data from persistant file
         public static readonly IDictionary<User, LicenseGroup> AvailableLicenseActivations =
             new ConcurrentDictionary<User, LicenseGroup>();
 
@@ -13,6 +14,7 @@ namespace CryptoKnight.Server.Core
 
         static KeyStore()
         {
+            // TODO: Remove demo code
             var licenseGroup = new LicenseGroup();
             var generator = new Generator
             {
