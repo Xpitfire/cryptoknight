@@ -43,6 +43,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CommandManager.cs" />
+    <Compile Include="Commands\CreateKeyCommand.cs" />
+    <Compile Include="Commands\KeyStoreManagerCommand.cs" />
+    <Compile Include="Commands\TcpServerManagerCommand.cs" />
+    <Compile Include="ICommand.cs" />
+    <Compile Include="InputOutputHandler.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -58,7 +64,12 @@
       <Project>{0bfa3422-b8c7-4b4a-9350-a9c6219b156c}</Project>
       <Name>CryptoKnight.Server.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CryptoKnight.Server.KeyGenerator\CryptoKnight.Server.KeyGenerator.csproj">
+      <Project>{86e21c27-d099-48fc-ac4c-cc5207e2111c}</Project>
+      <Name>CryptoKnight.Server.KeyGenerator</Name>
+    </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

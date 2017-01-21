@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CryptoKnight.Server.Console.Commands;
 
 namespace CryptoKnight.Server.Console
 {
@@ -10,6 +6,10 @@ namespace CryptoKnight.Server.Console
     {
         static void Main(string[] args)
         {
+            var cmdManager = new CommandManager();
+            cmdManager.Commands.Add(new TcpServerManagerCommand());
+            cmdManager.Commands.Add(new KeyStoreManagerCommand());
+            cmdManager.ProcessCommands();
         }
     }
 }
