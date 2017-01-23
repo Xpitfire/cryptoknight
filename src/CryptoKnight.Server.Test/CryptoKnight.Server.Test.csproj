@@ -52,8 +52,13 @@
   <ItemGroup>
     <Compile Include="LicenseServerTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TcpNetworkTest.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CryptoKnight.Library.Network\CryptoKnight.Library.Network.csproj">
+      <Project>{918807ba-7dc9-46c4-8a13-792779a04bb9}</Project>
+      <Name>CryptoKnight.Library.Network</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CryptoKnight.Server.Console\CryptoKnight.Server.Console.csproj">
       <Project>{cde6cc3e-a942-4e09-a2f8-f85a2bc18326}</Project>
       <Name>CryptoKnight.Server.Console</Name>
