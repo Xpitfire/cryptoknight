@@ -48,11 +48,16 @@
     <Compile Include="LicenseRuntime.cs" />
     <Compile Include="KeyStore.cs" />
     <Compile Include="LicenseGroup.cs" />
+    <Compile Include="LicenseServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SecuredPersistance.cs" />
     <Compile Include="User.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CryptoKnight.Library.Network\CryptoKnight.Library.Network.csproj">
+      <Project>{918807ba-7dc9-46c4-8a13-792779a04bb9}</Project>
+      <Name>CryptoKnight.Library.Network</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CryptoKnight.Server.KeyGenerator\CryptoKnight.Server.KeyGenerator.csproj">
       <Project>{86e21c27-d099-48fc-ac4c-cc5207e2111c}</Project>
       <Name>CryptoKnight.Server.KeyGenerator</Name>

@@ -86,6 +86,11 @@ namespace CryptoKnight.Library.Network
             SendBytes(dataToSend);
         }
 
+        public void SendData<T>(T data)
+        {
+            SendData(data.ToBytes());
+        }
+
         public void SendHeartbeat()
         {
             var heartbeat = BitConverter.GetBytes((int)0);
