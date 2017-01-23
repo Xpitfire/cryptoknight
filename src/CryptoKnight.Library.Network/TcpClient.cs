@@ -68,9 +68,12 @@ namespace CryptoKnight.Library.Network
 
         public void SendData(byte[] data)
         {
-            if (_serverSocket == null || _serverSocket.IsConnected)
-                return;
-            _serverSocket.SendData(data);
+            _serverSocket?.SendData(data);
+        }
+
+        public void SendData<T>(T data)
+        {
+            SendData(data.ToBytes());
         }
 
         private void StopHeartbeat()
@@ -94,6 +97,22 @@ namespace CryptoKnight.Library.Network
         protected virtual void OnReceivedData(TcpSocket server, byte[] data)
         {
             ReceivedData?.Invoke(server, data);
+        }
+
+        protected static void HandleData<TInterface, TData>(
+            TcpSocket socket,
+            TInterface message,
+            Action<TData> handler) where TData : class
+        {
+            var convertedMessage = message as TData;
+            if (convertedMessage != null)
+            {
+                handler(convertedMessage);
+            }
+            else
+            {
+                socket.Close();
+            }
         }
 
         public void Dispose()

@@ -12,10 +12,8 @@ namespace CryptoKnight.Library.Network
         public int BufferSize { get; set; }
         public IPEndPoint EndPoint { get; set; }
 
-        public bool IsConnected
-        {
-            get
-            {
+        public bool IsConnected {
+            get {
                 try
                 {
                     return !(Socket.Poll(1, SelectMode.SelectRead) && Socket.Available == 0);
@@ -116,7 +114,7 @@ namespace CryptoKnight.Library.Network
                 Socket.EndConnect(ar);
                 OnConnected(this);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // Debug.WriteLine($"ProcessConnect: {e}");
                 Close();
@@ -135,7 +133,7 @@ namespace CryptoKnight.Library.Network
                 OnAcceptedConnection(connection);
                 Socket.BeginAccept(ProcessAccept, null);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // Debug.WriteLine($"ProcessAccept: {e}");
                 Close();
@@ -153,7 +151,7 @@ namespace CryptoKnight.Library.Network
                 ProcessIncomingData(receivedData);
                 Socket.BeginReceive(SocketBuffer, 0, BufferSize, SocketFlags.None, ProcessReceive, this);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // Debug.WriteLine($"ProcessReceive: {e}");
                 Close();
@@ -209,7 +207,7 @@ namespace CryptoKnight.Library.Network
                 Socket.EndSend(ar);
                 OnSentData(this, sentData);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // Debug.WriteLine($"ProcessSend: {e}");
                 Close();

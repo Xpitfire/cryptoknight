@@ -96,6 +96,22 @@ namespace CryptoKnight.Library.Network
             }
         }
 
+        protected static void HandleData<TInterface, TData>(
+            TcpSocket socket,
+            TInterface message,
+            Action<TcpSocket, TData> handler) where TData : class
+        {
+            var convertedMessage = message as TData;
+            if (convertedMessage != null)
+            {
+                handler(socket, convertedMessage);
+            }
+            else
+            {
+                socket.Close();
+            }
+        }
+
         public void Dispose()
         {
             Stop();
