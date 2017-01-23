@@ -25,35 +25,42 @@ namespace CryptoKnight.Server.Test
         private const string Localhost = "127.0.0.1";
         private const int Port = 1991;
         private static readonly IPEndPoint EndPoint = new IPEndPoint(IPAddress.Parse(Localhost), Port);
-        private static readonly User Admin = new User
+        private static readonly User User = new User
         {
-            Email = "admin@host.com",
-            PasswordHash = "admin"
+            Email = "user@host.com",
+            PasswordHash = "user"
         };
 
-        private static readonly LicenseServer Server = new LicenseServer(EndPoint);
-        private static readonly LicenseClient Client = new LicenseClient(EndPoint);
+        private static LicenseServer _server;
+        private static LicenseClient _client;
 
         private static bool _loggedIn;
+        private static bool _verified;
+
+
+        private static ILicenseService _licencService;
 
         [TestMethod]
         public void TestLogin()
         {
-            _loggedIn = false;
-            Client.Connected += ClientOnConnected;
-            Client.ReceivedData += ClientOnReceivedData;
+            _server = new LicenseServer(EndPoint);
+            _client = new LicenseClient(EndPoint);
 
-            Server.Start();
-            Client.Start();
+            _loggedIn = false;
+            _client.Connected += ClientOnConnected;
+            _client.ReceivedData += ClientOnReceivedDataTestLogin;
+
+            _server.Start();
+            _client.Start();
 
             TimeoutLoop(() => _loggedIn);
             Assert.IsTrue(_loggedIn);
 
-            Client.Stop();
-            Server.Stop();
+            _client.Stop();
+            _server.Stop();
         }
 
-        private void ClientOnReceivedData(TcpSocket server, byte[] data)
+        private void ClientOnReceivedDataTestLogin(TcpSocket server, byte[] data)
         {
             var message = data.ToType<IMessage>();
             Assert.AreEqual(message.Type, MessageType.LoginResponse);
@@ -63,9 +70,49 @@ namespace CryptoKnight.Server.Test
             _loggedIn = true;
         }
 
+        [TestMethod]
+        public void TestVerifyLicense()
+        {
+            _server = new LicenseServer(EndPoint);
+            _client = new LicenseClient(EndPoint);
+
+            _verified = false;
+            _client.Connected += ClientOnConnected;
+            _client.ReceivedData += ClientOnReceivedDataTestVerifyLicense;
+
+            _server.Start();
+            _client.Start();
+
+            TimeoutLoop(() => _verified);
+            Assert.IsTrue(_verified);
+
+            _client.Stop();
+            _server.Stop();
+        }
+
+
+        private void ClientOnReceivedDataTestVerifyLicense(TcpSocket server, byte[] data)
+        {
+            var message = data.ToType<IMessage>();
+            if (message.Type == MessageType.VerifyLicenseResponse)
+            {
+                Assert.AreEqual(message.Type, MessageType.VerifyLicenseResponse);
+                var verifyLicenseResponse = message as VerifyLicenseResponseMessage;
+                Assert.IsNotNull(verifyLicenseResponse);
+                Assert.AreEqual(verifyLicenseResponse.Status, LicenseStatus.Accepted);
+                _verified = true;
+            }
+            else if (message.Type == MessageType.LoginResponse)
+            {
+                _licencService = new DefaultLicenseServiceImpl();
+                var code = _licencService.RequestLicenseKey(User).Code;
+                _client.VerifyLicense(code);
+            }
+        }
+
         private void ClientOnConnected(TcpSocket server)
         {
-            Client.Login(Admin.Email, Admin.PasswordHash);
+            _client.Login(User.Email, User.PasswordHash);
         }
 
 

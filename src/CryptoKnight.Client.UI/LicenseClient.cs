@@ -57,16 +57,17 @@ namespace CryptoKnight.Client.UI
         {
             try
             {
-
                 var message = data.ToType<IMessage>();
                 switch (message.Type)
                 {
                     case MessageType.LoginResponse:
                         HandleData<IMessage, LoginResponseMessage>(server, message, OnLoginResponse);
                         break;
+
                     case MessageType.VerifyLicenseResponse:
                         HandleData<IMessage, VerifyLicenseResponseMessage>(server, message, OnVerifyLicenseResponse);
                         break;
+
                     default:
                         // unknown message (invalid data)
                         server.Close();

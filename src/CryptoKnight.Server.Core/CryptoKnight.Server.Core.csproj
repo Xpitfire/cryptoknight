@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClientData.cs" />
     <Compile Include="DefaultAuthService.cs" />
     <Compile Include="DefaultLicenseServiceImpl.cs" />
     <Compile Include="IAuthService.cs" />

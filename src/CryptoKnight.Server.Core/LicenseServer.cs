@@ -3,6 +3,7 @@ using CryptoKnight.Library.Network.ProtocolMessages;
 using CryptoKnight.Library.Network.ProtocolMessages.Client;
 using CryptoKnight.Library.Network.ProtocolMessages.Server;
 using CryptoKnight.Library.Network.ProtocolMessages.Server.Enums;
+using CryptoKnight.Server.KeyGenerator;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -12,9 +13,14 @@ using System.Net;
 
 namespace CryptoKnight.Server.Core
 {
+    // implemented the server with the following existing classes
+    // LicenseRuntime, KeyStore (can and should be replaced by a service)
     public class LicenseServer : TcpServer
     {
-        private readonly IDictionary<TcpSocket, User> _loggedInUsers = new ConcurrentDictionary<TcpSocket, User>();
+
+        public const int MaxLicenseActivations = 1;
+
+        private readonly IDictionary<TcpSocket, ClientData> _loggedInUsers = new ConcurrentDictionary<TcpSocket, ClientData>();
 
         public LicenseServer(IPEndPoint endPoint) : base(endPoint)
         {
@@ -24,12 +30,16 @@ namespace CryptoKnight.Server.Core
 
         private new void OnClientDisconnected(TcpSocket client)
         {
-            var user = default(User);
-            if (_loggedInUsers.TryGetValue(client, out user))
+            var clientData = default(ClientData);
+            if (!_loggedInUsers.TryGetValue(client, out clientData)) return;
+            _loggedInUsers.Remove(client);
+
+            // TODO: can be replaced with any IAuthService if needed
+            // IAuthService.Logout
+            foreach (var key in clientData.LicenseGroup.Keys)
             {
-                // TODO: Interact with IAuthService
-                // IAuthService.Logout
-                _loggedInUsers.Remove(client);
+                if (!LicenseRuntime.ActiveInstance.ContainsKey(key)) continue;
+                LicenseRuntime.ActiveInstance[key] -= 1;
             }
         }
 
@@ -72,7 +82,11 @@ namespace CryptoKnight.Server.Core
             if (loginUser != null)
             {
                 loginStatus = LoginStatus.LoggedIn;
-                _loggedInUsers.Add(client, loginUser);
+                _loggedInUsers.Add(client, new ClientData
+                {
+                    User = loginUser,
+                    LicenseGroup = new LicenseGroup()
+                });
             }
             client.SendData(new LoginResponseMessage
             {
@@ -83,14 +97,35 @@ namespace CryptoKnight.Server.Core
         private void OnVerifyLicense(TcpSocket client, VerifyLicenseMessage message)
         {
             Debug.WriteLine($"Client: {client.Id} tries to verify license {message.Code}");
-            var user = default(User);
-            if (_loggedInUsers.TryGetValue(client, out user))
+            var clientData = default(ClientData);
+            if (_loggedInUsers.TryGetValue(client, out clientData))
             {
-                Debug.WriteLine($"User: {user.Email} tries to verify a license!");
-                var loggedIn = true; // TODO: Interact with IAuthService
+                Debug.WriteLine($"User: {clientData.User.Email} tries to verify a license!");
+
+                // TODO: can be replaced with any IAuthService if needed
+                // IAuthService.Login
+                var verifyKey = default(Key);
+                foreach (var key in KeyStore.AvailableLicenseActivations[clientData.User].Keys)
+                {
+                    if (!key.Code.Equals(message.Code)) continue;
+                    verifyKey = key;
+                    break;
+                }
+
+                var isActive = LicenseRuntime.ActiveInstance.ContainsKey(verifyKey);
+                if (!isActive)
+                {
+                    LicenseRuntime.ActiveInstance[verifyKey] = 0;
+                }
+                var accept = LicenseRuntime.ActiveInstance[verifyKey] < MaxLicenseActivations;
+                if (accept)
+                {
+                    LicenseRuntime.ActiveInstance[verifyKey] += 1;
+                    clientData.LicenseGroup.Keys.Add(verifyKey);
+                }
                 client.SendData(new VerifyLicenseResponseMessage
                 {
-                    Status = loggedIn ? LicenseStatus.Accepted : LicenseStatus.Denied,
+                    Status = accept ? LicenseStatus.Accepted : LicenseStatus.Denied,
                     Code = message.Code
                 });
             }
