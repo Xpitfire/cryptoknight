@@ -28,7 +28,7 @@ namespace CryptoKnight.Server.Console
 
         private void WritePrompt(string str)
         {
-            _output.Write(str + "> ");
+            _output.Write($"{str}> ");
         }
     }
 }
