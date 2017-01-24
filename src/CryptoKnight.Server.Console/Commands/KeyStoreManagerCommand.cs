@@ -1,6 +1,6 @@
 ﻿namespace CryptoKnight.Server.Console.Commands
 {
-    public class KeyStoreManagerCommand : CommandManager
+    public class KeyStoreManagerCommand : CommandManager<Program>
     {
         public override string Description => "Manage the KeyStore.";
 

@@ -9,6 +9,7 @@ namespace CryptoKnight.Library.Network
     {
 
         public int ActiveClients => _clients.Count;
+        public bool Running { get; private set; }
 
         private TcpSocket _listenerSocket;
         private readonly ConcurrentDictionary<Guid, TcpSocket> _clients;
@@ -30,19 +31,24 @@ namespace CryptoKnight.Library.Network
 
         public TcpServer(IPEndPoint endPoint)
         {
+            Running = false;
             _endPoint = endPoint;
             _clients = new ConcurrentDictionary<Guid, TcpSocket>();
         }
 
-        public void Start()
+        public bool Start()
         {
+            if (Running) return false;
             _listenerSocket = new TcpSocket(_endPoint);
             _listenerSocket.AcceptedConnection += OnClientConnected;
             _listenerSocket.StartListening();
+            Running = true;
+            return true;
         }
 
         public void Stop()
         {
+            if (!Running) return;
             foreach (var client in _clients.ToArray())
             {
                 client.Value.Close();
@@ -50,6 +56,7 @@ namespace CryptoKnight.Library.Network
             _clients.Clear();
             _listenerSocket.Close();
             _listenerSocket.AcceptedConnection -= OnClientConnected;
+            Running = false;
         }
 
         public void BroadcastData(byte[] data)
