@@ -1,8 +1,10 @@
-﻿namespace CryptoKnight.Server.Core
+﻿using CryptoKnight.Server.KeyGenerator;
+
+namespace CryptoKnight.Server.Core
 {
     public class ClientData
     {
         public User User { get; set; }
-        public LicenseGroup LicenseGroup { get; set; }
+        public Key Key { get; set; }
     }
 }

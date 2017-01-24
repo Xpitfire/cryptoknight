@@ -4,10 +4,9 @@ using System;
 namespace CryptoKnight.Library.Network.ProtocolMessages.Client
 {
     [Serializable]
-    public class LoginMessage : IMessage
+    public class RequestLicenseMessage : IMessage
     {
-        public MessageType Type => MessageType.Login;
+        public MessageType Type => MessageType.RequestLicense;
         public User User { get; set; }
-        public Key Key { get; set; }
     }
 }

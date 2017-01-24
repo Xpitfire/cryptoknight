@@ -7,9 +7,9 @@ namespace CryptoKnight.Library.Network.ProtocolMessages
     {
         // client to server
         Login,
-        VerifyLicense,
+        RequestLicense,
         // server to client
         LoginResponse,
-        VerifyLicenseResponse
+        RequestLicenseResponse
     }
 }

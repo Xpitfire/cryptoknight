@@ -1,6 +1,7 @@
 ﻿using CryptoKnight.Library.Network;
 using CryptoKnight.Library.Network.ProtocolMessages;
 using CryptoKnight.Library.Network.ProtocolMessages.Client;
+using CryptoKnight.Library.Network.ProtocolMessages.Common;
 using CryptoKnight.Library.Network.ProtocolMessages.Server;
 using System;
 using System.Diagnostics;
@@ -24,28 +25,26 @@ namespace CryptoKnight.Client.UI
             ReceivedData += OnReceivedData;
         }
 
-        public void Login(string email, string passwordHash)
+        public void Login(User user, Key key)
         {
             SendData(new LoginMessage
             {
-                Email = email,
-                PasswordHash = passwordHash
+                User = user,
+                Key = key
             });
         }
 
-        public void VerifyLicense(string code)
+        public void RequestLicense(User user)
         {
-            SendData(new VerifyLicenseMessage
+            SendData(new RequestLicenseMessage
             {
-                Code = code
+                User = user
             });
         }
 
         private new void OnConnected(TcpSocket server)
         {
             // TODO: Implement the handling of the on connected event
-            // dummy implementation (login as user)
-            // Login("daniel.glaser@crexis.com", "12345");
         }
 
         private new void OnDisconnected(TcpSocket server)
@@ -64,8 +63,8 @@ namespace CryptoKnight.Client.UI
                         HandleData<IMessage, LoginResponseMessage>(server, message, OnLoginResponse);
                         break;
 
-                    case MessageType.VerifyLicenseResponse:
-                        HandleData<IMessage, VerifyLicenseResponseMessage>(server, message, OnVerifyLicenseResponse);
+                    case MessageType.RequestLicenseResponse:
+                        HandleData<IMessage, RequestLicenseResponseMessage>(server, message, OnVerifyLicenseResponse);
                         break;
 
                     default:
@@ -82,21 +81,16 @@ namespace CryptoKnight.Client.UI
             }
         }
 
-        private void OnVerifyLicenseResponse(VerifyLicenseResponseMessage response)
+        private void OnVerifyLicenseResponse(RequestLicenseResponseMessage response)
         {
             // TODO: Implement the handling of the verify license response
-            Debug.WriteLine($@"License {response.Code} got {response.Status}!");
+            Debug.WriteLine($@"License request responded: {response.Key.Code}!");
         }
 
         private void OnLoginResponse(LoginResponseMessage response)
         {
             // TODO: Implement the handling of the login response
-            Debug.WriteLine($@"Login response status: {response.Status}");
-            // dummy implementation: when logged in - verify a license
-            // if (response.Status == LoginStatus.LoggedIn)
-            // {
-            //     VerifyLicense("abcdefghijklmnopqrstuvwxyz");
-            // }
+            Debug.WriteLine($@"Login response status: {response.LoggedIn}");
         }
     }
 }

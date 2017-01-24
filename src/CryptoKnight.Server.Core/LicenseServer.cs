@@ -2,23 +2,22 @@
 using CryptoKnight.Library.Network.ProtocolMessages;
 using CryptoKnight.Library.Network.ProtocolMessages.Client;
 using CryptoKnight.Library.Network.ProtocolMessages.Server;
-using CryptoKnight.Library.Network.ProtocolMessages.Server.Enums;
 using CryptoKnight.Server.KeyGenerator;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Net;
+using Common = CryptoKnight.Library.Network.ProtocolMessages.Common;
 
 namespace CryptoKnight.Server.Core
 {
-    // implemented the server with the following existing classes
-    // LicenseRuntime, KeyStore (can and should be replaced by a service)
     public class LicenseServer : TcpServer
     {
-
         public const int MaxLicenseActivations = 1;
+
+        private readonly IAuthService _authService = new DefaultAuthService();
+        private readonly ILicenseService _licenseService = new DefaultLicenseServiceImpl();
 
         private readonly IDictionary<TcpSocket, ClientData> _loggedInUsers = new ConcurrentDictionary<TcpSocket, ClientData>();
 
@@ -33,14 +32,7 @@ namespace CryptoKnight.Server.Core
             var clientData = default(ClientData);
             if (!_loggedInUsers.TryGetValue(client, out clientData)) return;
             _loggedInUsers.Remove(client);
-
-            // TODO: can be replaced with any IAuthService if needed
-            // IAuthService.Logout
-            foreach (var key in clientData.LicenseGroup.Keys)
-            {
-                if (!LicenseRuntime.ActiveInstance.ContainsKey(key)) continue;
-                LicenseRuntime.ActiveInstance[key] -= 1;
-            }
+            _authService.Logout(clientData.User, clientData.Key);
         }
 
         private new void OnClientSentData(TcpSocket client, byte[] data)
@@ -54,8 +46,8 @@ namespace CryptoKnight.Server.Core
                         HandleData<IMessage, LoginMessage>(client, message, OnLogin);
                         break;
 
-                    case MessageType.VerifyLicense:
-                        HandleData<IMessage, VerifyLicenseMessage>(client, message, OnVerifyLicense);
+                    case MessageType.RequestLicense:
+                        HandleData<IMessage, RequestLicenseMessage>(client, message, OnRequestLicense);
                         break;
 
                     default:
@@ -73,68 +65,39 @@ namespace CryptoKnight.Server.Core
 
         private void OnLogin(TcpSocket client, LoginMessage message)
         {
-            Debug.WriteLine($"Client: {client.Id} tries to login with {message.Email} // {message.PasswordHash}");
-            var loginUser = KeyStore.AvailableLicenseActivations.Keys.FirstOrDefault(user =>
-                user.Email.ToLower().Equals(message.Email.ToLower()) &&
-                user.PasswordHash.Equals(message.PasswordHash)
-            );
-            var loginStatus = LoginStatus.WrongEmailOrPassword;
-            if (loginUser != null)
+            Debug.WriteLine($"Client: {client.Id} ({message.User.Email} / {message.User.PasswordHash}) tries to login.");
+            var user = new User
             {
-                loginStatus = LoginStatus.LoggedIn;
+                Email = message.User.Email,
+                PasswordHash = message.User.PasswordHash
+            };
+            var key = new Key { Code = message.Key.Code };
+
+            var loginStatus = _authService.Login(user, key);
+            if (loginStatus)
+            {
                 _loggedInUsers.Add(client, new ClientData
                 {
-                    User = loginUser,
-                    LicenseGroup = new LicenseGroup()
+                    User = user,
+                    Key = key
                 });
             }
-            client.SendData(new LoginResponseMessage
-            {
-                Status = loginStatus
-            });
+            client.SendData(new LoginResponseMessage { LoggedIn = loginStatus });
         }
 
-        private void OnVerifyLicense(TcpSocket client, VerifyLicenseMessage message)
+        private void OnRequestLicense(TcpSocket client, RequestLicenseMessage message)
         {
-            Debug.WriteLine($"Client: {client.Id} tries to verify license {message.Code}");
-            var clientData = default(ClientData);
-            if (_loggedInUsers.TryGetValue(client, out clientData))
+            Debug.WriteLine($"Client: {client.Id} ({message.User.Email} / {message.User.PasswordHash}) requests a license key.");
+            var user = new User
             {
-                Debug.WriteLine($"User: {clientData.User.Email} tries to verify a license!");
-
-                // TODO: can be replaced with any IAuthService if needed
-                // IAuthService.Login
-                var verifyKey = default(Key);
-                foreach (var key in KeyStore.AvailableLicenseActivations[clientData.User].Keys)
-                {
-                    if (!key.Code.Equals(message.Code)) continue;
-                    verifyKey = key;
-                    break;
-                }
-
-                var isActive = LicenseRuntime.ActiveInstance.ContainsKey(verifyKey);
-                if (!isActive)
-                {
-                    LicenseRuntime.ActiveInstance[verifyKey] = 0;
-                }
-                var accept = LicenseRuntime.ActiveInstance[verifyKey] < MaxLicenseActivations;
-                if (accept)
-                {
-                    LicenseRuntime.ActiveInstance[verifyKey] += 1;
-                    clientData.LicenseGroup.Keys.Add(verifyKey);
-                }
-                client.SendData(new VerifyLicenseResponseMessage
-                {
-                    Status = accept ? LicenseStatus.Accepted : LicenseStatus.Denied,
-                    Code = message.Code
-                });
-            }
-            else
+                Email = message.User.Email,
+                PasswordHash = message.User.PasswordHash
+            };
+            var key = _licenseService.RequestLicenseKey(user);
+            client.SendData(new RequestLicenseResponseMessage
             {
-                Debug.WriteLine($"Client: {client.Id} sent VerifyLicense before logging in");
-                // user is not logged in
-                // TODO: Decide how to handle it, disconnect the user? or allow invalid verify request?
-            }
+                Key = key == null ? null : new Common.Key { Code = key.Code }
+            });
         }
 
     }

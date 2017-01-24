@@ -1,5 +1,4 @@
-﻿using CryptoKnight.Library.Network.ProtocolMessages.Server.Enums;
-using System;
+﻿using System;
 
 namespace CryptoKnight.Library.Network.ProtocolMessages.Server
 {
@@ -7,6 +6,6 @@ namespace CryptoKnight.Library.Network.ProtocolMessages.Server
     public class LoginResponseMessage : IMessage
     {
         public MessageType Type => MessageType.LoginResponse;
-        public LoginStatus Status { get; set; }
+        public bool LoggedIn { get; set; }
     }
 }
