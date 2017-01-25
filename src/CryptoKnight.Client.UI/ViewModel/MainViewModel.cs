@@ -1,12 +1,14 @@
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CryptoKnight.Client.Core.Plugin;
+using CryptoKnight.Library.Network;
+using CryptoKnight.Library.Network.ProtocolMessages.Common;
+using CryptoKnight.Library.Network.ProtocolMessages.Server;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace CryptoKnight.Client.UI.ViewModel
 {
@@ -24,119 +26,169 @@ namespace CryptoKnight.Client.UI.ViewModel
     /// </summary>
     public class MainViewModel : ViewModelBase
     {
-
-        /// <summary>
-        /// Initializes a new instance of the MainViewModel class.
-        /// </summary>
-        public MainViewModel()
+        // TODO: remove default user 
+        // default user is used to not have to type the mail / password
+        // every time 
+        private static readonly User DefaultUser = new User
         {
-            OpenButtonName = Properties.Resources.OpenButton;
-            OpenLabelName = Properties.Resources.SelectedFile;
-            OriginalTextLabel = Properties.Resources.OriginalText;
-            ConvertedTextLabel = Properties.Resources.ConvertedText;
-            EncryptButtonName = Properties.Resources.Encrypt;
-            DecryptButtonName = Properties.Resources.Decrypt;
+            Email = "user@host.com",
+            PasswordHash = "user"
+        };
 
-            OpenCommand = new RelayCommand(OpenFileSelectionDialogAsync);
-            EncryptCommand = new RelayCommand(EncryptTextAsync);
-            DecryptCommand = new RelayCommand(DecryptTextAsync);
+        // default endpoint (can also be removed later on)
+        private const string Localhost = "127.0.0.1";
+        private const int Port = 1991;
+        private static readonly IPEndPoint DefaultEndpoint = new IPEndPoint(IPAddress.Parse(Localhost), Port);
 
-            EncryptionPlugins = PluginFactory.Get().ToList();
-            EncryptionOptions = new ObservableCollection<string>();
-            foreach (var plugin in EncryptionPlugins)
-            {
-                EncryptionOptions.Add(plugin.ToString());
-            }
-            CurrentEncryptionPlugin = EncryptionOptions.FirstOrDefault();
-            Reset();
+
+        private readonly Encoding _encoding = Encoding.Unicode;
+
+        public UserViewModel User { get; }
+
+        public KeyViewModel Key { get; }
+
+        public IPEndPointViewModel EndPoint { get; }
+
+        private string _connectionStatus;
+
+        public string ConnectionStatus {
+            get { return _connectionStatus; }
+            set { Set(ref _connectionStatus, value); }
         }
 
-        private async void EncryptTextAsync()
-        {
-            await Task.Run(() =>
-            {
-                if (string.IsNullOrEmpty(OriginalText)) return;
-                var plugin = LookupPlugin(CurrentEncryptionPlugin);
-                if (plugin == null) return;
-                EncryptedData = string.IsNullOrEmpty(ConvertedText)
-                    ? plugin.Encrypt(OriginalText)
-                    : plugin.Encrypt(ConvertedText);
-                ConvertedText = Encoding.UTF8.GetString(EncryptedData);
-            });
+        private string _password;
+        public string Password {
+            get { return _password; }
+            set { Set(ref _password, value); }
         }
-
-        private IPlugin LookupPlugin(string pluginName)
-        {
-            return EncryptionPlugins
-                .FirstOrDefault(plugin => plugin.ToString() == pluginName);
-        }
-
-        private async void DecryptTextAsync()
-        {
-            await Task.Run(() =>
-            {
-                if (EncryptedData == null || EncryptedData.Length <= 0) return;
-                var plugin = LookupPlugin(CurrentEncryptionPlugin);
-                if (plugin == null) return;
-                ConvertedText = plugin.Decrypt(EncryptedData);
-            });
-        }
-
-        private void Reset()
-        {
-            SelectedFileLabel = string.Empty;
-            OriginalText = string.Empty;
-            ConvertedText = string.Empty;
-            EncryptedData = null;
-        }
-
-        private async void OpenFileSelectionDialogAsync()
-        {
-            await Task.Run(() =>
-            {
-                var fileDialog = new Microsoft.Win32.OpenFileDialog {Filter = "Text Files (*.txt)|*.txt"};
-                var result = fileDialog.ShowDialog();
-                if (result == false) return;
-                SelectedFileLabel = fileDialog.FileName;
-                OriginalText = File.ReadAllText(SelectedFileLabel);
-            });
-        }
-
-        public string OpenButtonName { get; private set; }
-        public string OpenLabelName { get; private set; }
-        public string EncryptButtonName { get; private set; }
-        public string DecryptButtonName { get; private set; }
 
         private string _originalText;
-        public string OriginalText
-        {
+        public string OriginalText {
             get { return _originalText; }
             set { Set(ref _originalText, value); }
         }
+
         private string _convertedText;
         public string ConvertedText {
             get { return _convertedText; }
             set { Set(ref _convertedText, value); }
         }
 
-        public string OriginalTextLabel { get; private set; }
-        public string ConvertedTextLabel { get; private set; }
-
-        private string _selectedFileLabel;
-        public string SelectedFileLabel
-        {
-            get { return _selectedFileLabel; }
-            set { Set(ref _selectedFileLabel, value); }
+        private bool _connected;
+        public bool Connected {
+            get { return _connected; }
+            set { Set(ref _connected, value); }
         }
 
-        public string CurrentEncryptionPlugin { get; set; }
-        private byte[] EncryptedData { get; set; }
-        public ObservableCollection<string> EncryptionOptions { get; set; }
-        private IList<IPlugin> EncryptionPlugins { get; set; }
+        public PluginViewModel SelectedPlugin { get; set; }
+
+        public ObservableCollection<PluginViewModel> Plugins { get; set; }
+
+        public RelayCommand ConnectCommand { get; }
+
+        public RelayCommand DisconnectCommand { get; }
+
+        public RelayCommand EncryptCommand { get; }
+
+        public RelayCommand DecryptCommand { get; }
+
+        private readonly LicenseClient _licenseClient;
 
 
-        public RelayCommand OpenCommand { get; private set; }
-        public RelayCommand EncryptCommand { get; private set; }
-        public RelayCommand DecryptCommand { get; private set; }
+        public MainViewModel()
+        {
+            User = new UserViewModel(DefaultUser);
+            Key = new KeyViewModel();
+            EndPoint = new IPEndPointViewModel(DefaultEndpoint);
+            Connected = false;
+
+            ConnectCommand = new RelayCommand(async () => await Task.Run(() => Connect()));
+            DisconnectCommand = new RelayCommand(async () => await Task.Run(() => Disconnect()));
+            EncryptCommand = new RelayCommand(async () => await Task.Run(() => EncryptText()));
+            DecryptCommand = new RelayCommand(async () => await Task.Run(() => DecryptText()));
+
+            _licenseClient = new LicenseClient(EndPoint.EndPoint);
+            _licenseClient.Connected += LicenseClientOnConnected;
+            _licenseClient.Disconnected += LicenseClientOnDisconnected;
+            _licenseClient.LoginResponse += OnLoginResponse;
+            _licenseClient.RequestLicenseResponse += OnRequestLicenseResponse;
+
+            Plugins = new ObservableCollection<PluginViewModel>();
+            foreach (var plugin in PluginFactory.Get().ToList())
+            {
+                Plugins.Add(new PluginViewModel(plugin));
+            }
+        }
+
+        private void Connect()
+        {
+            ConnectionStatus = Properties.Resources.Connecting;
+            _licenseClient.Start();
+        }
+
+        private void Disconnect()
+        {
+            Connected = false;
+            ConnectionStatus = Properties.Resources.Disconnected;
+            _licenseClient.Stop();
+        }
+
+        private void EncryptText()
+        {
+            if (SelectedPlugin?.Plugin == null || OriginalText == null) return;
+            var plugin = SelectedPlugin.Plugin;
+            var data = plugin.Encrypt(OriginalText, Password);
+            if (data == null) return;
+            ConvertedText = Convert.ToBase64String(data);
+        }
+
+        private void DecryptText()
+        {
+            if (SelectedPlugin?.Plugin == null || OriginalText == null) return;
+            var plugin = SelectedPlugin.Plugin;
+            try
+            {
+                var data = plugin.Decrypt(Convert.FromBase64String(OriginalText), Password);
+                ConvertedText = data;
+            }
+            catch (Exception)
+            {
+                // invalid string size
+                // "Convert.FromBase64String" throws exception if
+                // the string does not have a valid base64 length
+            }
+        }
+
+        private void LicenseClientOnDisconnected(TcpSocket server)
+        {
+            Disconnect();
+        }
+
+        private void LicenseClientOnConnected(TcpSocket server)
+        {
+            Connected = true;
+            ConnectionStatus = Properties.Resources.Connected;
+            // TODO: change once the server persistence is done
+            // for testing purposes (till the persistence is done) we request
+            // a new key everytime we connect (login will fail after 3 connects
+            // if the server was not restarted since the keystore will be empty)
+            _licenseClient.RequestLicense(User.User);
+            // in the final version this will be:
+            // _licenseClient.Login(User.User, Key.Key);
+        }
+
+        private void OnLoginResponse(LoginResponseMessage message)
+        {
+            ConnectionStatus = message.LoggedIn
+                ? Properties.Resources.LicenseVerified
+                : Properties.Resources.LicenseDenied;
+        }
+
+        // TODO: remove once the server persistence is done
+        private void OnRequestLicenseResponse(RequestLicenseResponseMessage message)
+        {
+            Key.Code = message.Key.Code;
+            _licenseClient.Login(User.User, Key.Key);
+        }
     }
 }

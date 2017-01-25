@@ -148,9 +148,14 @@ namespace CryptoKnight.Library.Network
 
         private void ProcessReceive(IAsyncResult ar)
         {
+
             try
             {
                 var readBytes = Socket.EndReceive(ar);
+                if (readBytes == 0)
+                {
+                    throw new SocketException();
+                }
                 var receivedData = new byte[readBytes];
                 Array.Copy(SocketBuffer, receivedData, readBytes);
                 ProcessIncomingData(receivedData);
@@ -209,7 +214,9 @@ namespace CryptoKnight.Library.Network
             try
             {
                 var sentData = (byte[])ar.AsyncState;
-                Socket.EndSend(ar);
+                var sentBytes = Socket.EndSend(ar);
+                if (sentBytes <= 0)
+                    throw new SocketException();
                 OnSentData(this, sentData);
             }
             catch (Exception)
@@ -229,27 +236,27 @@ namespace CryptoKnight.Library.Network
             return ret;
         }
 
-        protected virtual void OnAcceptedConnection(TcpSocket socket)
+        private void OnAcceptedConnection(TcpSocket socket)
         {
             AcceptedConnection?.Invoke(socket);
         }
 
-        protected virtual void OnReceivedData(TcpSocket socket, byte[] data)
+        private void OnReceivedData(TcpSocket socket, byte[] data)
         {
             ReceivedData?.Invoke(socket, data);
         }
 
-        protected virtual void OnSentData(TcpSocket socket, byte[] data)
+        private void OnSentData(TcpSocket socket, byte[] data)
         {
             SentData?.Invoke(socket, data);
         }
 
-        protected virtual void OnConnected(TcpSocket socket)
+        private void OnConnected(TcpSocket socket)
         {
             Connected?.Invoke(socket);
         }
 
-        protected virtual void OnDisconnected(TcpSocket socket)
+        private void OnDisconnected(TcpSocket socket)
         {
             Disconnected?.Invoke(socket);
         }

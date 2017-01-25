@@ -4,7 +4,6 @@ using CryptoKnight.Library.Network.ProtocolMessages.Client;
 using CryptoKnight.Library.Network.ProtocolMessages.Common;
 using CryptoKnight.Library.Network.ProtocolMessages.Server;
 using System;
-using System.Diagnostics;
 using System.Net;
 
 namespace CryptoKnight.Client.UI
@@ -18,10 +17,17 @@ namespace CryptoKnight.Client.UI
     // for the client the same way as CryptoKnight.Server.Core serves as core for the server
     public class LicenseClient : TcpClient
     {
+
+        public delegate void RequestLicenseResponseHandler(RequestLicenseResponseMessage message);
+
+        public event RequestLicenseResponseHandler RequestLicenseResponse;
+
+        public delegate void LoginResponseHandler(LoginResponseMessage message);
+
+        public event LoginResponseHandler LoginResponse;
+
         public LicenseClient(IPEndPoint endPoint) : base(endPoint)
         {
-            Connected += OnConnected;
-            Disconnected += OnDisconnected;
             ReceivedData += OnReceivedData;
         }
 
@@ -42,17 +48,7 @@ namespace CryptoKnight.Client.UI
             });
         }
 
-        private new void OnConnected(TcpSocket server)
-        {
-            // TODO: Implement the handling of the on connected event
-        }
-
-        private new void OnDisconnected(TcpSocket server)
-        {
-            // TODO: Implement the handling of the on disconnected event
-        }
-
-        private new void OnReceivedData(TcpSocket server, byte[] data)
+        private void OnReceivedData(TcpSocket server, byte[] data)
         {
             try
             {
@@ -60,11 +56,11 @@ namespace CryptoKnight.Client.UI
                 switch (message.Type)
                 {
                     case MessageType.LoginResponse:
-                        HandleData<IMessage, LoginResponseMessage>(server, message, OnLoginResponse);
+                        HandleData<LoginResponseMessage>(server, message, OnLoginResponse);
                         break;
 
                     case MessageType.RequestLicenseResponse:
-                        HandleData<IMessage, RequestLicenseResponseMessage>(server, message, OnVerifyLicenseResponse);
+                        HandleData<RequestLicenseResponseMessage>(server, message, OnRequestLicenseResponse);
                         break;
 
                     default:
@@ -81,16 +77,14 @@ namespace CryptoKnight.Client.UI
             }
         }
 
-        private void OnVerifyLicenseResponse(RequestLicenseResponseMessage response)
+        protected virtual void OnRequestLicenseResponse(RequestLicenseResponseMessage message)
         {
-            // TODO: Implement the handling of the verify license response
-            Debug.WriteLine($@"License request responded: {response.Key.Code}!");
+            RequestLicenseResponse?.Invoke(message);
         }
 
-        private void OnLoginResponse(LoginResponseMessage response)
+        protected virtual void OnLoginResponse(LoginResponseMessage message)
         {
-            // TODO: Implement the handling of the login response
-            Debug.WriteLine($@"Login response status: {response.LoggedIn}");
+            LoginResponse?.Invoke(message);
         }
     }
 }

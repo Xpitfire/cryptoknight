@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 
 namespace CryptoKnight.Library.Network
@@ -12,7 +14,7 @@ namespace CryptoKnight.Library.Network
         public bool Running { get; private set; }
 
         private TcpSocket _listenerSocket;
-        private readonly ConcurrentDictionary<Guid, TcpSocket> _clients;
+        private readonly IDictionary<Guid, TcpSocket> _clients = new ConcurrentDictionary<Guid, TcpSocket>();
         private readonly IPEndPoint _endPoint;
 
 
@@ -33,7 +35,6 @@ namespace CryptoKnight.Library.Network
         {
             Running = false;
             _endPoint = endPoint;
-            _clients = new ConcurrentDictionary<Guid, TcpSocket>();
         }
 
         public bool Start()
@@ -67,31 +68,24 @@ namespace CryptoKnight.Library.Network
             }
         }
 
-        protected virtual void OnClientConnected(TcpSocket socket)
+        private void OnClientConnected(TcpSocket socket)
         {
-            if (_clients.TryAdd(socket.Id, socket))
-            {
-                socket.ReceivedData += OnClientSentData;
-                socket.Disconnected += OnClientDisconnected;
-                ClientConnected?.Invoke(socket);
-                socket.StartReceiving();
-            }
-            else
-            {
-                socket.Close();
-            }
+            _clients.Add(socket.Id, socket);
+            socket.ReceivedData += OnClientSentData;
+            socket.Disconnected += OnClientDisconnected;
+            ClientConnected?.Invoke(socket);
+            socket.StartReceiving();
         }
 
-        protected virtual void OnClientDisconnected(TcpSocket socket)
+        private void OnClientDisconnected(TcpSocket socket)
         {
-            TcpSocket tmpSocket;
-            _clients.TryRemove(socket.Id, out tmpSocket);
+            _clients.Remove(socket.Id);
             socket.ReceivedData -= OnClientSentData;
             socket.Disconnected -= OnClientDisconnected;
             ClientDisconnected?.Invoke(socket);
         }
 
-        protected virtual void OnClientSentData(TcpSocket socket, byte[] data)
+        private void OnClientSentData(TcpSocket socket, byte[] data)
         {
             if (data.Length == 0)
             {
@@ -103,15 +97,15 @@ namespace CryptoKnight.Library.Network
             }
         }
 
-        protected static void HandleData<TInterface, TData>(
+        protected static void HandleData<TData>(
             TcpSocket socket,
-            TInterface message,
+            object data,
             Action<TcpSocket, TData> handler) where TData : class
         {
-            var convertedMessage = message as TData;
-            if (convertedMessage != null)
+            var convertedData = data as TData;
+            if (convertedData != null)
             {
-                handler(socket, convertedMessage);
+                handler(socket, convertedData);
             }
             else
             {

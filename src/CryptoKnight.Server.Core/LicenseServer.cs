@@ -27,7 +27,7 @@ namespace CryptoKnight.Server.Core
             ClientDisconnected += OnClientDisconnected;
         }
 
-        private new void OnClientDisconnected(TcpSocket client)
+        private void Logout(TcpSocket client)
         {
             var clientData = default(ClientData);
             if (!_loggedInUsers.TryGetValue(client, out clientData)) return;
@@ -35,19 +35,25 @@ namespace CryptoKnight.Server.Core
             _authService.Logout(clientData.User, clientData.Key);
         }
 
-        private new void OnClientSentData(TcpSocket client, byte[] data)
+        private void OnClientDisconnected(TcpSocket client)
         {
+            Logout(client);
+        }
+
+        private void OnClientSentData(TcpSocket client, byte[] data)
+        {
+
             try
             {
                 var message = data.ToType<IMessage>();
                 switch (message.Type)
                 {
                     case MessageType.Login:
-                        HandleData<IMessage, LoginMessage>(client, message, OnLogin);
+                        HandleData<LoginMessage>(client, message, OnLogin);
                         break;
 
                     case MessageType.RequestLicense:
-                        HandleData<IMessage, RequestLicenseMessage>(client, message, OnRequestLicense);
+                        HandleData<RequestLicenseMessage>(client, message, OnRequestLicense);
                         break;
 
                     default:
@@ -66,6 +72,8 @@ namespace CryptoKnight.Server.Core
         private void OnLogin(TcpSocket client, LoginMessage message)
         {
             Debug.WriteLine($"Client: {client.Id} ({message.User.Email} / {message.User.PasswordHash}) tries to login.");
+            Logout(client); // to avoid multiple key reservation from one connection
+
             var user = new User
             {
                 Email = message.User.Email,

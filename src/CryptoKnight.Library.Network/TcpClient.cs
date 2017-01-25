@@ -1,18 +1,21 @@
 ﻿using System;
 using System.Net;
-using System.Threading;
+using System.Timers;
+using Timer = System.Timers.Timer;
 
 namespace CryptoKnight.Library.Network
 {
     public class TcpClient : IDisposable
     {
-        public bool Heartbeat { get; set; }
+        private const int DefaultHeartbeatInterval = 5000;
+
         public int HeartbeatInterval { get; set; }
-        private bool _heartbeatRunning;
+
+        public IPEndPoint EndPoint;
 
         private TcpSocket _serverSocket;
-        private readonly IPEndPoint _endPoint;
-        private Thread _heartbeatThread;
+
+        private readonly Timer _heartbeatTimer;
 
         public delegate void ConnectedHandler(TcpSocket server);
 
@@ -26,40 +29,38 @@ namespace CryptoKnight.Library.Network
 
         public event DisconnectedHandler Disconnected;
 
-        public TcpClient(IPEndPoint endPoint, bool heartbeat = true, int heartbeatInterval = 5000)
+        public TcpClient(IPEndPoint endPoint, bool heartbeat = true, int heartbeatInterval = DefaultHeartbeatInterval)
         {
-            _endPoint = endPoint;
-            Heartbeat = heartbeat;
+            EndPoint = endPoint;
             HeartbeatInterval = heartbeatInterval;
+            if (!heartbeat) return;
+            _heartbeatTimer = new Timer(HeartbeatInterval)
+            {
+                AutoReset = true
+            };
+            _heartbeatTimer.Elapsed += HeartbeatTimerOnElapsed;
+        }
+
+        private void HeartbeatTimerOnElapsed(object sender, ElapsedEventArgs elapsedEventArgs)
+        {
+            _serverSocket?.SendHeartbeat();
         }
 
         public void Start()
         {
-            _serverSocket = new TcpSocket(_endPoint);
+            _serverSocket = new TcpSocket(EndPoint);
             _serverSocket.Connected += OnConnected;
             _serverSocket.ReceivedData += OnReceivedData;
             _serverSocket.Disconnected += OnDisconnected;
             _serverSocket.Connect();
-            _heartbeatThread = new Thread(HeartbeatStart);
-            _heartbeatThread.Start();
-        }
-
-        private void HeartbeatStart()
-        {
-            _heartbeatRunning = true;
-            while (_heartbeatRunning)
-            {
-                Thread.Sleep(HeartbeatInterval);
-                if (Heartbeat)
-                {
-                    _serverSocket?.SendHeartbeat();
-                }
-            }
         }
 
         public void Stop()
         {
-            StopHeartbeat();
+            if (_heartbeatTimer != null && _heartbeatTimer.Enabled)
+            {
+                _heartbeatTimer.Stop();
+            }
             _serverSocket.Close();
             _serverSocket.Connected -= OnConnected;
             _serverSocket.ReceivedData -= OnReceivedData;
@@ -76,38 +77,34 @@ namespace CryptoKnight.Library.Network
             SendData(data.ToBytes());
         }
 
-        private void StopHeartbeat()
+        private void OnConnected(TcpSocket server)
         {
-            _heartbeatRunning = false;
-            _heartbeatThread.Abort();
-        }
-
-        protected virtual void OnConnected(TcpSocket server)
-        {
+            _heartbeatTimer?.Start();
             _serverSocket.StartReceiving();
             Connected?.Invoke(server);
         }
 
-        protected virtual void OnDisconnected(TcpSocket server)
+        private void OnDisconnected(TcpSocket server)
         {
             Stop();
             Disconnected?.Invoke(server);
         }
 
-        protected virtual void OnReceivedData(TcpSocket server, byte[] data)
+        private void OnReceivedData(TcpSocket server, byte[] data)
         {
-            ReceivedData?.Invoke(server, data);
+            if (data.Length != 0)
+                ReceivedData?.Invoke(server, data);
         }
 
-        protected static void HandleData<TInterface, TData>(
+        protected static void HandleData<TData>(
             TcpSocket socket,
-            TInterface message,
+            object data,
             Action<TData> handler) where TData : class
         {
-            var convertedMessage = message as TData;
-            if (convertedMessage != null)
+            var convertedData = data as TData;
+            if (convertedData != null)
             {
-                handler(convertedMessage);
+                handler(convertedData);
             }
             else
             {
@@ -117,6 +114,7 @@ namespace CryptoKnight.Library.Network
 
         public void Dispose()
         {
+            _heartbeatTimer.Elapsed -= HeartbeatTimerOnElapsed;
             Stop();
         }
     }

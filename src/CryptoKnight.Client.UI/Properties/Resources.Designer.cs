@@ -61,11 +61,38 @@ namespace CryptoKnight.Client.UI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Converted text data.
+        ///   Looks up a localized string similar to Connect.
         /// </summary>
-        public static string ConvertedText {
+        public static string Connect {
             get {
-                return ResourceManager.GetString("ConvertedText", resourceCulture);
+                return ResourceManager.GetString("Connect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connected.
+        /// </summary>
+        public static string Connected {
+            get {
+                return ResourceManager.GetString("Connected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connecting....
+        /// </summary>
+        public static string Connecting {
+            get {
+                return ResourceManager.GetString("Connecting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CryptoKnight.
+        /// </summary>
+        public static string CryptoKnight {
+            get {
+                return ResourceManager.GetString("CryptoKnight", resourceCulture);
             }
         }
         
@@ -79,6 +106,33 @@ namespace CryptoKnight.Client.UI.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Disconnect.
+        /// </summary>
+        public static string Disconnect {
+            get {
+                return ResourceManager.GetString("Disconnect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disconnected.
+        /// </summary>
+        public static string Disconnected {
+            get {
+                return ResourceManager.GetString("Disconnected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Email:.
+        /// </summary>
+        public static string Email {
+            get {
+                return ResourceManager.GetString("Email", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Encrypt.
         /// </summary>
         public static string Encrypt {
@@ -88,29 +142,83 @@ namespace CryptoKnight.Client.UI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open.
+        ///   Looks up a localized string similar to Key:.
         /// </summary>
-        public static string OpenButton {
+        public static string Key {
             get {
-                return ResourceManager.GetString("OpenButton", resourceCulture);
+                return ResourceManager.GetString("Key", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Original text data.
+        ///   Looks up a localized string similar to Invalid license or already in use..
         /// </summary>
-        public static string OriginalText {
+        public static string LicenseDenied {
             get {
-                return ResourceManager.GetString("OriginalText", resourceCulture);
+                return ResourceManager.GetString("LicenseDenied", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Selected File:.
+        ///   Looks up a localized string similar to License successfully verified!.
         /// </summary>
-        public static string SelectedFile {
+        public static string LicenseVerified {
             get {
-                return ResourceManager.GetString("SelectedFile", resourceCulture);
+                return ResourceManager.GetString("LicenseVerified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Login Information.
+        /// </summary>
+        public static string LoginInfo {
+            get {
+                return ResourceManager.GetString("LoginInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password:.
+        /// </summary>
+        public static string Password {
+            get {
+                return ResourceManager.GetString("Password", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Plugin.
+        /// </summary>
+        public static string Plugin {
+            get {
+                return ResourceManager.GetString("Plugin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server:.
+        /// </summary>
+        public static string Server {
+            get {
+                return ResourceManager.GetString("Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server Information.
+        /// </summary>
+        public static string ServerInfo {
+            get {
+                return ResourceManager.GetString("ServerInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status:.
+        /// </summary>
+        public static string Status {
+            get {
+                return ResourceManager.GetString("Status", resourceCulture);
             }
         }
     }

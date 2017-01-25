@@ -1,12 +1,13 @@
-﻿using System;
+﻿using CryptoKnight.Client.Core.Plugin;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security;
 using System.Security.Permissions;
 using System.Security.Policy;
-using CryptoKnight.Client.Core.Plugin;
 
 namespace CryptoKnight.Client.UI
 {
@@ -22,7 +23,7 @@ namespace CryptoKnight.Client.UI
             {
                 if (!type.GetInterfaces().Contains(typeof(IPlugin))) continue;
                 return sandboxDomain.CreateInstanceAndUnwrap(
-                    assembly.FullName, 
+                    assembly.FullName,
                     type.FullName) as IPlugin;
             }
             return null;
@@ -49,9 +50,9 @@ namespace CryptoKnight.Client.UI
             foreach (var file in new DirectoryInfo(".").GetFiles("*.dll"))
             {
                 var assemblyName = file.Name.Replace(".dll", "");
-                Console.WriteLine($@"Loaded DLL: {assemblyName}");
                 var plugin = LoadAddIn(assemblyName, pluginSandboxDomain);
                 if (plugin == null) continue;
+                Debug.WriteLine($@"Loaded DLL: {assemblyName}");
                 yield return plugin;
             }
         }

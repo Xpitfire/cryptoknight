@@ -117,22 +117,58 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ConvertedText" xml:space="preserve">
-    <value>Converted text data</value>
+  <data name="Connect" xml:space="preserve">
+    <value>Connect</value>
+  </data>
+  <data name="Connected" xml:space="preserve">
+    <value>Connected</value>
+  </data>
+  <data name="Connecting" xml:space="preserve">
+    <value>Connecting...</value>
+  </data>
+  <data name="CryptoKnight" xml:space="preserve">
+    <value>CryptoKnight</value>
   </data>
   <data name="Decrypt" xml:space="preserve">
     <value>Decrypt</value>
   </data>
+  <data name="Disconnect" xml:space="preserve">
+    <value>Disconnect</value>
+  </data>
+  <data name="Disconnected" xml:space="preserve">
+    <value>Disconnected</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>Email:</value>
+  </data>
   <data name="Encrypt" xml:space="preserve">
     <value>Encrypt</value>
   </data>
-  <data name="OpenButton" xml:space="preserve">
-    <value>Open</value>
+  <data name="Key" xml:space="preserve">
+    <value>Key:</value>
   </data>
-  <data name="OriginalText" xml:space="preserve">
-    <value>Original text data</value>
+  <data name="LicenseDenied" xml:space="preserve">
+    <value>Invalid license or already in use.</value>
   </data>
-  <data name="SelectedFile" xml:space="preserve">
-    <value>Selected File:</value>
+  <data name="LicenseVerified" xml:space="preserve">
+    <value>License successfully verified!</value>
+  </data>
+  <data name="LoginInfo" xml:space="preserve">
+    <value>Login Information</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Password:</value>
+  </data>
+  <data name="Plugin" xml:space="preserve">
+    <value>Plugin</value>
+  </data>
+  <data name="Server" xml:space="preserve">
+    <value>Server:</value>
+  </data>
+  <data name="ServerInfo" xml:space="preserve">
+    <value>Server Information</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Status:</value>
   </data>
 </root>

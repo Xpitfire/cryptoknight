@@ -3,84 +3,158 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:properties="clr-namespace:CryptoKnight.Client.UI.Properties"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="CryptoKnight" Height="400" Width="600">
+    <Window.Resources>
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Margin" Value="3"/>
+        </Style>
+        <Style TargetType="{x:Type TextBlock}">
+            <Setter Property="Margin" Value="3"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style TargetType="{x:Type TextBox}">
+            <Setter Property="Margin" Value="3"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style TargetType="{x:Type GroupBox}">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Padding" Value="5"/>
+        </Style>
+        <converter:BooleanConverter xmlns:converter="clr-namespace:CryptoKnight.Client.UI.Converter" x:Key="BooleanConverter"/>
+        <converter:InverseBooleanConverter xmlns:converter="clr-namespace:CryptoKnight.Client.UI.Converter" x:Key="InverseBooleanConverter"/>
+    </Window.Resources>
+
     <Grid DataContext="{Binding Main, Source={StaticResource Locator}}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Button Grid.Row="0" 
-                Grid.Column="0"
-                Content="{Binding OpenButtonName}"
-                Command="{Binding OpenCommand}">
-        </Button>
-        <StackPanel Grid.Row="1"
-                    Grid.Column="0"
-                    VerticalAlignment="Stretch"
-                    HorizontalAlignment="Stretch">
-            <Label Content="{Binding OpenLabelName}">
-            </Label>
-            <TextBox Text="{Binding SelectedFileLabel, Mode=TwoWay}"
-                     IsReadOnly="True">
-            </TextBox>
-        </StackPanel>
-        <Grid Grid.Row="2"
-              Grid.Column="0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
+        <GroupBox Grid.Row="0" Grid.Column="0" Header="{x:Static properties:Resources.LoginInfo}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="35"/>
+                    <RowDefinition Height="35"/>
+                    <RowDefinition Height="35"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-            <Label Grid.Row="0"
-                   Grid.Column="0"
-                   Content="{Binding OriginalTextLabel}">
-            </Label>
-            <Label Grid.Row="0"
-                   Grid.Column="1"
-                   Content="{Binding ConvertedTextLabel}">
-            </Label>
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="{x:Static properties:Resources.Email}"/>
+                <TextBox Grid.Row="0" Grid.Column="1" Height="25" Text="{Binding User.Email, Mode=TwoWay}" />
 
-            <TextBox Grid.Row="1"
-                     Grid.Column="0"
-                     IsReadOnly="True"
-                     Text="{Binding OriginalText, Mode=TwoWay}">
-            </TextBox>
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="{x:Static properties:Resources.Password}"/>
+                <TextBox Grid.Row="1" Grid.Column="1" Height="25"  Text="{Binding User.PasswordHash}" />
 
-            <TextBox Grid.Row="1"
-                     Grid.Column="1"
-                     IsReadOnly="True"
-                     Text="{Binding ConvertedText, Mode=TwoWay}">
-            </TextBox>
-        </Grid>
-        <StackPanel Grid.Row="3"
-                    Grid.Column="0"
-                    Orientation="Horizontal"
-                    VerticalAlignment="Stretch"
-                    HorizontalAlignment="Stretch">
-            <Button Content="{Binding EncryptButtonName}"
-                    Command="{Binding EncryptCommand}">
-            </Button>
-            <Button Content="{Binding DecryptButtonName}"
-                    Command="{Binding DecryptCommand}">
-            </Button>
-        </StackPanel>
-        <ComboBox Grid.Row="4"
-                  Grid.Column="0"
-                  ItemsSource="{Binding EncryptionOptions}"
-                  SelectedItem="{Binding CurrentEncryptionPlugin}"
-                  IsSynchronizedWithCurrentItem="True">
-        </ComboBox>
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="{x:Static properties:Resources.Key}"/>
+                <TextBox Grid.Row="2" Grid.Column="1" Height="25"  Text="{Binding Key.Code}" />
+            </Grid>
+        </GroupBox>
+
+        <GroupBox Grid.Row="0" Grid.Column="1" Header="{x:Static properties:Resources.ServerInfo}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="35"/>
+                    <RowDefinition Height="35"/>
+                    <RowDefinition Height="35"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition MinWidth="50" Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="{x:Static properties:Resources.Server}"/>
+                <TextBox Grid.Row="0" Grid.Column="1" Height="25" Text="{Binding EndPoint.Address, Mode=TwoWay}" />
+                <TextBox Grid.Row="0" Grid.Column="2" Height="25" Text="{Binding EndPoint.Port, Mode=TwoWay, TargetNullValue={x:Static sys:String.Empty}}" />
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Height="20" Text="{x:Static properties:Resources.Status}"/>
+                <TextBlock Grid.Row="1" Grid.Column="1" Height="20" Text="{Binding ConnectionStatus}"/>
+
+                <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
+                      DataContext="{Binding Main, Source={StaticResource Locator}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Row="0" Grid.Column="0" DockPanel.Dock="Left" Command="{Binding ConnectCommand}" 
+                            Content="{x:Static properties:Resources.Connect}"
+                            IsEnabled="{Binding Connected, Converter={StaticResource InverseBooleanConverter}, NotifyOnSourceUpdated=True}"/>
+                    <Button Grid.Row="0" Grid.Column="1"  DockPanel.Dock="Right" Command="{Binding DisconnectCommand}" 
+                            Content="{x:Static properties:Resources.Disconnect}"
+                            IsEnabled="{Binding Connected, Converter={StaticResource BooleanConverter}, NotifyOnSourceUpdated=True}"/>
+                </Grid>
+            </Grid>
+        </GroupBox>
+
+        <GroupBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Header="{x:Static properties:Resources.CryptoKnight}">
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+
+                <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="{x:Static properties:Resources.Plugin}"/>
+                    <ComboBox Grid.Row="0" Grid.Column="1" Height="25" 
+                              ItemsSource="{Binding Plugins}"
+                              SelectedItem="{Binding SelectedPlugin}"
+                              DisplayMemberPath="Name"
+                              IsSynchronizedWithCurrentItem="True"/>
+                    <TextBlock Grid.Row="0" Grid.Column="2" Text="{x:Static properties:Resources.Password}"/>
+                    <TextBox Grid.Row="0" Grid.Column="3" Height="25" Text="{Binding Password}"></TextBox>
+                    <Button Grid.Row="0" Grid.Column="4" HorizontalAlignment="Right"
+                            Content="{x:Static properties:Resources.Encrypt}" 
+                            Command="{Binding EncryptCommand}"/>
+                    <Button Grid.Row="0" Grid.Column="5" HorizontalAlignment="Right"
+                            Content="{x:Static properties:Resources.Decrypt}"
+                            Command="{Binding DecryptCommand}"/>
+                </Grid>
+
+                <TextBox Grid.Row="1" Grid.Column="0" VerticalAlignment="Stretch" 
+                         VerticalContentAlignment="Top" 
+                         Text="{Binding OriginalText, Mode=TwoWay}"
+                         TextWrapping="Wrap"
+                         AcceptsReturn="True"
+                         VerticalScrollBarVisibility="Visible"
+                            />
+                <TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Stretch"
+                         VerticalContentAlignment="Top"
+                         Text="{Binding ConvertedText, Mode=TwoWay}"
+                         TextWrapping="Wrap"
+                         IsReadOnly="True"
+                         VerticalScrollBarVisibility="Visible"/>
+            </Grid>
+
+        </GroupBox>
+
     </Grid>
 </Window>
