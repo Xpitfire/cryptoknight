@@ -13,10 +13,12 @@ namespace CryptoKnight.Server.Console
 
         public CommandManager<Program> CommandManager;
         public LicenseServer LicenseServer { get; set; }
+        public ILicenseService LicenseService { get; set; }
 
         public void Run()
         {
             LicenseServer = new LicenseServer(EndPoint);
+            LicenseService = new DefaultLicenseServiceImpl();
             CommandManager = new CommandManager<Program>();
             CommandManager.Commands.Add(new TcpServerManagerCommand());
             CommandManager.Commands.Add(new KeyStoreManagerCommand());

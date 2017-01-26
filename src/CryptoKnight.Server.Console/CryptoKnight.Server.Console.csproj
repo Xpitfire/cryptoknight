@@ -47,6 +47,7 @@
     <Compile Include="Commands\CreateKeyCommand.cs" />
     <Compile Include="Commands\KeyStoreManagerCommand.cs" />
     <Compile Include="Commands\PrintLicenseServerInfosCommand.cs" />
+    <Compile Include="Commands\RegisterUserCommand.cs" />
     <Compile Include="Commands\StartLicenseServerCommand.cs" />
     <Compile Include="Commands\StopLicenseServerCommand.cs" />
     <Compile Include="Commands\TcpServerManagerCommand.cs" />
@@ -66,6 +67,10 @@
     <ProjectReference Include="..\CryptoKnight.Server.Core\CryptoKnight.Server.Core.csproj">
       <Project>{0bfa3422-b8c7-4b4a-9350-a9c6219b156c}</Project>
       <Name>CryptoKnight.Server.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CryptoKnight.Server.KeyGenerator\CryptoKnight.Server.KeyGenerator.csproj">
+      <Project>{86E21C27-D099-48FC-AC4C-CC5207E2111C}</Project>
+      <Name>CryptoKnight.Server.KeyGenerator</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />
