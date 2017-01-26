@@ -8,14 +8,45 @@ namespace CryptoKnight.Server.Core
     public class DefaultAuthService : IAuthService
     {
         private readonly int _maxLicenseActivations = 0;
+        public int MaxActivations => 10;
 
         public DefaultAuthService()
         {
-            // TODO: Make an initialization for new servers
-            //Console.WriteLine($"{Convert.ToBase64String(DataProtectionApi.Protect(10.ToBytes()))}");
-            var data = ConfigurationManager.AppSettings["MaxLicenseActivations"];
-            var protectedData = DataProtectionApi.Unprotect(Convert.FromBase64String(data));
-            _maxLicenseActivations = protectedData.ToType<int>();
+            string data = null;
+            byte[] protectedData = null;
+            int retries = 0;
+            do
+            {
+                try
+                {
+                    data = ConfigurationManager.AppSettings["MaxLicenseActivations"];
+                    if (!string.IsNullOrEmpty(data))
+                        protectedData = DataProtectionApi.Unprotect(Convert.FromBase64String(data));
+                    _maxLicenseActivations = protectedData.ToType<int>();
+                }
+                catch
+                {
+                    ApplySettings("MaxLicenseActivations", Convert.ToBase64String(
+                        DataProtectionApi.Protect(MaxActivations.ToBytes())));
+                }
+            } while (_maxLicenseActivations != MaxActivations && ++retries < 2);
+        }
+
+        private static void ApplySettings(string key, string value)
+        {
+
+            var configFile = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            var settings = configFile.AppSettings.Settings;
+            if (settings[key] == null)
+            {
+                settings.Add(key, value);
+            }
+            else
+            {
+                settings[key].Value = value;
+            }
+            configFile.Save(ConfigurationSaveMode.Modified);
+            ConfigurationManager.RefreshSection(configFile.AppSettings.SectionInformation.Name);
         }
 
         public bool Login(User user, Key key)
