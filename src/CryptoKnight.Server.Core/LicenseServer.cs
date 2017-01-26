@@ -14,8 +14,6 @@ namespace CryptoKnight.Server.Core
 {
     public class LicenseServer : TcpServer
     {
-        public const int MaxLicenseActivations = 1;
-
         private readonly IAuthService _authService = new DefaultAuthService();
         private readonly ILicenseService _licenseService = new DefaultLicenseServiceImpl();
 
