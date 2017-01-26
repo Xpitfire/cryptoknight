@@ -1,10 +1,20 @@
-﻿using CryptoKnight.Server.KeyGenerator;
+﻿using CryptoKnight.Library.Network;
+using CryptoKnight.Server.KeyGenerator;
+using System;
+using System.Configuration;
 
 namespace CryptoKnight.Server.Core
 {
     public class DefaultAuthService : IAuthService
     {
-        public const int MaxLicenseActivations = 1;
+        private readonly int _maxLicenseActivations = 0;
+
+        public DefaultAuthService()
+        {
+            var data = ConfigurationManager.AppSettings["MaxLicenseActivations"];
+            var protectedData = DataProtectionApi.Unprotect(Convert.FromBase64String(data));
+            _maxLicenseActivations = protectedData.ToType<int>();
+        }
 
         public bool Login(User user, Key key)
         {
@@ -16,7 +26,7 @@ namespace CryptoKnight.Server.Core
             {
                 LicenseRuntime.ActiveInstance[key] = 0;
             }
-            if (LicenseRuntime.ActiveInstance[key] >= MaxLicenseActivations) return false;
+            if (LicenseRuntime.ActiveInstance[key] >= _maxLicenseActivations) return false;
             LicenseRuntime.ActiveInstance[key] += 1;
             return true;
         }
