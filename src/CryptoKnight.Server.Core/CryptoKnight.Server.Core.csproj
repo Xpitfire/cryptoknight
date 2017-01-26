@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClientData.cs" />
+    <Compile Include="DataProtectionApi.cs" />
     <Compile Include="DefaultAuthService.cs" />
     <Compile Include="DefaultLicenseServiceImpl.cs" />
     <Compile Include="IAuthService.cs" />
