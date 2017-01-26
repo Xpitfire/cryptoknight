@@ -7,15 +7,20 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using Common = CryptoKnight.Library.Network.ProtocolMessages.Common;
 
 namespace CryptoKnight.Server.Core
 {
     public class LicenseServer : TcpServer
     {
+        private const int DefaultExpireMinutes = 5;
+        private const string KeyTemplate = "kkkk-kkk-kk-k-kk-kkk-kkkk";
         private readonly IAuthService _authService = new DefaultAuthService();
         private readonly ILicenseService _licenseService = new DefaultLicenseServiceImpl();
+        private readonly Generator _generator = new Generator { Template = KeyTemplate };
 
         private readonly IDictionary<TcpSocket, ClientData> _loggedInUsers = new ConcurrentDictionary<TcpSocket, ClientData>();
 
@@ -79,16 +84,42 @@ namespace CryptoKnight.Server.Core
             };
             var key = new Key { Code = message.Key.Code };
 
+            var encryptedKey = default(byte[]);
+            var clientData = default(ClientData);
             var loginStatus = _authService.Login(user, key);
             if (loginStatus)
             {
-                _loggedInUsers.Add(client, new ClientData
+                clientData = new ClientData
                 {
                     User = user,
-                    Key = key
+                    Key = key,
+                    PluginPassword = _generator.CreateKey().Code
+                };
+                var fileKey = new Common.FileKey
+                {
+                    Password = clientData.PluginPassword,
+                    Expire = DateTime.Now.AddMinutes(DefaultExpireMinutes)
+                };
+                encryptedKey = DataProtection.Encrypt(fileKey.ToBytes(), key.Code);
+                _loggedInUsers.Add(client, clientData);
+            }
+
+            client.SendData(new LoginResponseMessage { Key = encryptedKey });
+            if (loginStatus)
+            {
+                Task.Run(() => SendPlugins(client, clientData));
+            }
+        }
+
+        private void SendPlugins(TcpSocket client, ClientData data)
+        {
+            foreach (var file in new DirectoryInfo(Path.Combine(".", "Plugins")).GetFiles("*.dll"))
+            {
+                client.SendData(new PluginResponseMessage
+                {
+                    Plugin = DataProtection.EncryptFile(file.FullName, data.PluginPassword)
                 });
             }
-            client.SendData(new LoginResponseMessage { LoggedIn = loginStatus });
         }
 
         private void OnRequestLicense(TcpSocket client, RequestLicenseMessage message)
@@ -100,6 +131,8 @@ namespace CryptoKnight.Server.Core
                 PasswordHash = message.User.PasswordHash
             };
             var key = _licenseService.RequestLicenseKey(user);
+
+
             client.SendData(new RequestLicenseResponseMessage
             {
                 Key = key == null ? null : new Common.Key { Code = key.Code }

@@ -6,6 +6,6 @@ namespace CryptoKnight.Library.Network.ProtocolMessages.Server
     public class LoginResponseMessage : IMessage
     {
         public MessageType Type => MessageType.LoginResponse;
-        public bool LoggedIn { get; set; }
+        public byte[] Key { get; set; }
     }
 }

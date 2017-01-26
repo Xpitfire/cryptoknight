@@ -26,6 +26,9 @@ namespace CryptoKnight.Client.UI
 
         public event LoginResponseHandler LoginResponse;
 
+        public delegate void PluginResponseHandler(PluginResponseMessage message);
+        public event PluginResponseHandler PluginResponse;
+
         public LicenseClient(IPEndPoint endPoint) : base(endPoint)
         {
             ReceivedData += OnReceivedData;
@@ -63,6 +66,10 @@ namespace CryptoKnight.Client.UI
                         HandleData<RequestLicenseResponseMessage>(server, message, OnRequestLicenseResponse);
                         break;
 
+                    case MessageType.PluginResponse:
+                        HandleData<PluginResponseMessage>(server, message, OnPluginResponse);
+                        break;
+
                     default:
                         // unknown message (invalid data)
                         server.Close();
@@ -75,6 +82,11 @@ namespace CryptoKnight.Client.UI
                 // server sent invalid data
                 server.Close();
             }
+        }
+
+        protected virtual void OnPluginResponse(PluginResponseMessage message)
+        {
+            PluginResponse?.Invoke(message);
         }
 
         protected virtual void OnRequestLicenseResponse(RequestLicenseResponseMessage message)

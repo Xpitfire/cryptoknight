@@ -10,6 +10,7 @@ namespace CryptoKnight.Library.Network.ProtocolMessages
         RequestLicense,
         // server to client
         LoginResponse,
-        RequestLicenseResponse
+        RequestLicenseResponse,
+        PluginResponse
     }
 }

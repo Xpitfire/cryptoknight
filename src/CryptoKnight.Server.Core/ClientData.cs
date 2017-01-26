@@ -6,5 +6,6 @@ namespace CryptoKnight.Server.Core
     {
         public User User { get; set; }
         public Key Key { get; set; }
+        public string PluginPassword { get; set; }
     }
 }
