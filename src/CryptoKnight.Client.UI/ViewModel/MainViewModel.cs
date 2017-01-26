@@ -1,11 +1,11 @@
 using CryptoKnight.Library.Network;
 using CryptoKnight.Library.Network.ProtocolMessages.Common;
 using CryptoKnight.Library.Network.ProtocolMessages.Server;
+using CryptoKnight.Server.Core;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using System;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -51,31 +51,36 @@ namespace CryptoKnight.Client.UI.ViewModel
 
         private string _connectionStatus;
 
-        public string ConnectionStatus {
+        public string ConnectionStatus
+        {
             get { return _connectionStatus; }
             set { Set(ref _connectionStatus, value); }
         }
 
         private string _password;
-        public string Password {
+        public string Password
+        {
             get { return _password; }
             set { Set(ref _password, value); }
         }
 
         private string _originalText;
-        public string OriginalText {
+        public string OriginalText
+        {
             get { return _originalText; }
             set { Set(ref _originalText, value); }
         }
 
         private string _convertedText;
-        public string ConvertedText {
+        public string ConvertedText
+        {
             get { return _convertedText; }
             set { Set(ref _convertedText, value); }
         }
 
         private bool _connected;
-        public bool Connected {
+        public bool Connected
+        {
             get { return _connected; }
             set { Set(ref _connected, value); }
         }
@@ -94,6 +99,8 @@ namespace CryptoKnight.Client.UI.ViewModel
 
         private readonly LicenseClient _licenseClient;
 
+        private FileKey _fileKey;
+
 
         public MainViewModel()
         {
@@ -111,13 +118,9 @@ namespace CryptoKnight.Client.UI.ViewModel
             _licenseClient.Connected += LicenseClientOnConnected;
             _licenseClient.Disconnected += LicenseClientOnDisconnected;
             _licenseClient.LoginResponse += OnLoginResponse;
-            _licenseClient.RequestLicenseResponse += OnRequestLicenseResponse;
+            _licenseClient.PluginResponse += OnPluginResponse;
 
             Plugins = new ObservableCollection<PluginViewModel>();
-            foreach (var plugin in PluginFactory.Get().ToList())
-            {
-                Plugins.Add(new PluginViewModel(plugin));
-            }
         }
 
         private void Connect()
@@ -168,27 +171,25 @@ namespace CryptoKnight.Client.UI.ViewModel
         {
             Connected = true;
             ConnectionStatus = Properties.Resources.Connected;
-            // TODO: change once the server persistence is done
-            // for testing purposes (till the persistence is done) we request
-            // a new key everytime we connect (login will fail after 3 connects
-            // if the server was not restarted since the keystore will be empty)
-            _licenseClient.RequestLicense(User.User);
-            // in the final version this will be:
-            // _licenseClient.Login(User.User, Key.Key);
+            _licenseClient.Login(User.User, Key.Key);
         }
 
         private void OnLoginResponse(LoginResponseMessage message)
         {
-            ConnectionStatus = message.LoggedIn
+            if (message.Key != null)
+            {
+                _fileKey = DataProtection.Decrypt(message.Key, Key.Code).ToType<FileKey>();
+            }
+            ConnectionStatus = message.Key != null
                 ? Properties.Resources.LicenseVerified
                 : Properties.Resources.LicenseDenied;
         }
 
-        // TODO: remove once the server persistence is done
-        private void OnRequestLicenseResponse(RequestLicenseResponseMessage message)
+
+        private void OnPluginResponse(PluginResponseMessage message)
         {
-            Key.Code = message.Key.Code;
-            _licenseClient.Login(User.User, Key.Key);
+            if (_fileKey == null) return;
+            Plugins.Add(new PluginViewModel(PluginSandbox.LoadAddIn(message.Plugin, _fileKey.Password)));
         }
     }
 }

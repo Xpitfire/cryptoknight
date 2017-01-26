@@ -115,6 +115,7 @@ namespace CryptoKnight.Server.Core
         {
             foreach (var file in new DirectoryInfo(Path.Combine(".", "Plugins")).GetFiles("*.dll"))
             {
+                Console.WriteLine($"File: {file.FullName}");
                 client.SendData(new PluginResponseMessage
                 {
                     Plugin = DataProtection.EncryptFile(file.FullName, data.PluginPassword)

@@ -72,7 +72,7 @@ namespace CryptoKnight.Server.Test
                 case MessageType.LoginResponse:
                     var loginMessage = message as LoginResponseMessage;
                     Assert.IsNotNull(loginMessage);
-                    _loggedIn = loginMessage.LoggedIn;
+                    _loggedIn = loginMessage.Key != null;
                     break;
 
                 case MessageType.RequestLicenseResponse:

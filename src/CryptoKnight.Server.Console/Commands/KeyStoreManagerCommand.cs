@@ -6,8 +6,8 @@
 
         public KeyStoreManagerCommand()
         {
-            // TODO: Add additional commands (add new user, add new license key, remove, ...?)
-            Commands.Add(new CreateKeyCommand());
+            Commands.Add(new RegisterUserCommand());
+            Commands.Add(new RequestUserKeyCommand());
         }
     }
 }

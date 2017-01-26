@@ -1,20 +1,50 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using CryptoKnight.Server.KeyGenerator;
+using System.IO;
+using CryptoKnight.Library.Network;
+using System;
 
 namespace CryptoKnight.Server.Core
 {
     internal static class KeyStore
     {
-        // TODO: Use / load data from persistant file
-        public static readonly IDictionary<User, LicenseGroup> AvailableLicenseActivations =
-            new ConcurrentDictionary<User, LicenseGroup>();
-
         public const string KeyTemplate = "kkkk-kkkkkkk-kk-kkkkkkk";
+        private const string KeyStoreFileName = "keystore.user";
+
+        private static readonly object sync;
+        private static readonly IDictionary<User, LicenseGroup> AvailableLicenseActivations;
 
         static KeyStore()
         {
-            // TODO: Remove demo code
+            sync = new object();
+            if (!File.Exists(KeyStoreFileName))
+            {
+                AvailableLicenseActivations = new ConcurrentDictionary<User, LicenseGroup>();
+            }
+            else
+            {
+                try
+                {
+                    var protectedData = File.ReadAllBytes(KeyStoreFileName);
+                    var bytes = DataProtectionApi.Unprotect(protectedData);
+                    AvailableLicenseActivations = bytes.ToType<IDictionary<User, LicenseGroup>>();
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine(ex);
+                }
+            }
+        }
+
+        internal static bool Contains(User user, Key key)
+        {
+            return AvailableLicenseActivations.ContainsKey(user)
+                && AvailableLicenseActivations[user].Keys.Contains(key);
+        }
+
+        internal static void RegisterUser(User user)
+        {
             var licenseGroup = new LicenseGroup();
             var generator = new Generator
             {
@@ -24,26 +54,16 @@ namespace CryptoKnight.Server.Core
             {
                 licenseGroup.Keys.Add(generator.CreateKey());
             }
-            AvailableLicenseActivations.Add(new User
-            {
-                Email = "admin@host.com",
-                PasswordHash = "admin"
-            }, licenseGroup);
+            AvailableLicenseActivations.Add(user, licenseGroup);
+            var protectedData = DataProtectionApi.Protect(AvailableLicenseActivations.ToBytes());
 
-            licenseGroup = new LicenseGroup();
-            for (var i = 0; i < LicenseGroup.MaxLicenseKeys; i++)
+            lock (sync)
             {
-                licenseGroup.Keys.Add(generator.CreateKey());
+                File.WriteAllBytes(KeyStoreFileName, protectedData);
             }
-
-            AvailableLicenseActivations.Add(new User
-            {
-                Email = "user@host.com",
-                PasswordHash = "user"
-            }, licenseGroup);
         }
 
-        public static Key RequestLicenseKey(User user)
+        internal static Key RequestLicenseKey(User user)
         {
             if (string.IsNullOrEmpty(user?.Email)
                 || string.IsNullOrEmpty(user.PasswordHash)) return null;
@@ -53,6 +73,22 @@ namespace CryptoKnight.Server.Core
             var key = AvailableLicenseActivations[user].Keys[index];
             key.Used = true;
             return key;
+        }
+
+        internal static void ShowInfo()
+        {
+            lock (sync)
+            {
+                // TODO: remove this code in an productive environment
+                foreach (var pair in AvailableLicenseActivations)
+                {
+                    Console.WriteLine($"User<email>: {pair.Key.Email}");
+                    foreach (var key in pair.Value.Keys)
+                    {
+                        Console.WriteLine($"-- <key>: {key.Code}");
+                    }
+                }
+            }
         }
     }
 }

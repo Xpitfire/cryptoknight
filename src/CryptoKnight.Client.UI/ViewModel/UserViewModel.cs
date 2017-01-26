@@ -1,5 +1,6 @@
 ﻿using CryptoKnight.Library.Network.ProtocolMessages.Common;
 using GalaSoft.MvvmLight;
+using CryptoKnight.Library.Network;
 
 namespace CryptoKnight.Client.UI.ViewModel
 {
@@ -17,11 +18,12 @@ namespace CryptoKnight.Client.UI.ViewModel
             }
         }
 
+        private string _passwordHash;
         public string PasswordHash {
-            get { return User.PasswordHash; }
+            get { return _passwordHash; }
             set {
-                User.PasswordHash = value;
-                Set(ref _dummy, value);
+                User.PasswordHash = value?.ComputeMd5Hash();
+                Set(ref _passwordHash, value);
             }
         }
 

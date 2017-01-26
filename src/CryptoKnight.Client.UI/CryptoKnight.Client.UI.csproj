@@ -77,8 +77,9 @@
     </ApplicationDefinition>
     <Compile Include="Converter\BooleanConverter.cs" />
     <Compile Include="Converter\InverseBooleanConverter.cs" />
+    <Compile Include="DataProtection.cs" />
     <Compile Include="LicenseClient.cs" />
-    <Compile Include="PluginFactory.cs" />
+    <Compile Include="PluginSandbox.cs" />
     <Compile Include="ViewModel\IPEndPointViewModel.cs" />
     <Compile Include="ViewModel\KeyViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />

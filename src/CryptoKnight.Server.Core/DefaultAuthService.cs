@@ -11,6 +11,8 @@ namespace CryptoKnight.Server.Core
 
         public DefaultAuthService()
         {
+            // TODO: Make an initialization for new servers
+            //Console.WriteLine($"{Convert.ToBase64String(DataProtectionApi.Protect(10.ToBytes()))}");
             var data = ConfigurationManager.AppSettings["MaxLicenseActivations"];
             var protectedData = DataProtectionApi.Unprotect(Convert.FromBase64String(data));
             _maxLicenseActivations = protectedData.ToType<int>();
@@ -20,8 +22,7 @@ namespace CryptoKnight.Server.Core
         {
             if (user?.Email == null) return false;
             if (key?.Code == null) return false;
-            if (!KeyStore.AvailableLicenseActivations.ContainsKey(user)) return false;
-            if (!KeyStore.AvailableLicenseActivations[user].Keys.Contains(key)) return false;
+            if (!KeyStore.Contains(user, key)) return false;
             if (!LicenseRuntime.ActiveInstance.ContainsKey(key))
             {
                 LicenseRuntime.ActiveInstance[key] = 0;
@@ -35,8 +36,7 @@ namespace CryptoKnight.Server.Core
         {
             if (user?.Email == null) return;
             if (key?.Code == null) return;
-            if (!KeyStore.AvailableLicenseActivations.ContainsKey(user)) return;
-            if (!KeyStore.AvailableLicenseActivations[user].Keys.Contains(key)) return;
+            if (!KeyStore.Contains(user, key)) return;
             if (!LicenseRuntime.ActiveInstance.ContainsKey(key)) return;
             LicenseRuntime.ActiveInstance[key] -= 1;
         }
