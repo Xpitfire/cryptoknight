@@ -111,7 +111,6 @@ namespace CryptoKnight.Client.UI.ViewModel
             _licenseClient.Connected += LicenseClientOnConnected;
             _licenseClient.Disconnected += LicenseClientOnDisconnected;
             _licenseClient.LoginResponse += OnLoginResponse;
-            _licenseClient.RequestLicenseResponse += OnRequestLicenseResponse;
 
             Plugins = new ObservableCollection<PluginViewModel>();
             foreach (var plugin in PluginFactory.Get().ToList())
@@ -172,9 +171,8 @@ namespace CryptoKnight.Client.UI.ViewModel
             // for testing purposes (till the persistence is done) we request
             // a new key everytime we connect (login will fail after 3 connects
             // if the server was not restarted since the keystore will be empty)
-            _licenseClient.RequestLicense(User.User);
             // in the final version this will be:
-            // _licenseClient.Login(User.User, Key.Key);
+            _licenseClient.Login(User.User, Key.Key);
         }
 
         private void OnLoginResponse(LoginResponseMessage message)
@@ -183,12 +181,6 @@ namespace CryptoKnight.Client.UI.ViewModel
                 ? Properties.Resources.LicenseVerified
                 : Properties.Resources.LicenseDenied;
         }
-
-        // TODO: remove once the server persistence is done
-        private void OnRequestLicenseResponse(RequestLicenseResponseMessage message)
-        {
-            Key.Code = message.Key.Code;
-            _licenseClient.Login(User.User, Key.Key);
-        }
+        
     }
 }

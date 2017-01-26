@@ -11,6 +11,8 @@ namespace CryptoKnight.Server.Core
 
         public DefaultAuthService()
         {
+            // TODO: Make an initialization for new servers
+            //Console.WriteLine($"{Convert.ToBase64String(DataProtectionApi.Protect(10.ToBytes()))}");
             var data = ConfigurationManager.AppSettings["MaxLicenseActivations"];
             var protectedData = DataProtectionApi.Unprotect(Convert.FromBase64String(data));
             _maxLicenseActivations = protectedData.ToType<int>();

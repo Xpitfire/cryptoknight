@@ -7,20 +7,13 @@ namespace CryptoKnight.Server.Console.Commands
 {
     class RegisterUserCommand : ICommand<Program>
     {
-        public string Description => "Register User";
-        private const string CancellationCommand = "exit";
-        private static readonly string CommandInfo = $"Please type in a valid email or '{CancellationCommand}' to quit >";
+        public string Description => "Register new User.";
+        private static readonly string CommandInfo = $"Please type in a valid email or '{InputOutputHandler.CancellationCommand}' to quit";
 
         public void Execute(InputOutputHandler io, Program host)
         {
-            string email = null;
-            // wait for valid input
-            while (string.IsNullOrEmpty(email = io.ReadString(CommandInfo)))
-            {
-                if (string.Equals(email, CancellationCommand, StringComparison.InvariantCultureIgnoreCase)) return;
-                io.WriteLine(CommandInfo);
-            }
-
+            string email = io.ReadEmail(CommandInfo);
+            if (email == null) return;
             var oneWayPassword = new Generator { Template = "kkkkkk" }.CreateKey();
             io.WriteLine($"Your one-way-password is: {oneWayPassword.Code}");
             host.LicenseService.RegisterUser(

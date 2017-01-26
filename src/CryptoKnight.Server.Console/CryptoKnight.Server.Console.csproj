@@ -44,10 +44,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommandManager.cs" />
-    <Compile Include="Commands\CreateKeyCommand.cs" />
     <Compile Include="Commands\KeyStoreManagerCommand.cs" />
     <Compile Include="Commands\PrintLicenseServerInfosCommand.cs" />
     <Compile Include="Commands\RegisterUserCommand.cs" />
+    <Compile Include="Commands\RequestUserKeyCommand.cs" />
     <Compile Include="Commands\StartLicenseServerCommand.cs" />
     <Compile Include="Commands\StopLicenseServerCommand.cs" />
     <Compile Include="Commands\TcpServerManagerCommand.cs" />

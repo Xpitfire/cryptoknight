@@ -16,5 +16,10 @@ namespace CryptoKnight.Server.Core
         {
             return KeyStore.RequestLicenseKey(user);
         }
+
+        public void ShowInfo()
+        {
+            KeyStore.ShowInfo();
+        }
     }
 }

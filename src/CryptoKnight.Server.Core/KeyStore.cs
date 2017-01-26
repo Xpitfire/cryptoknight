@@ -37,13 +37,13 @@ namespace CryptoKnight.Server.Core
             }
         }
 
-        public static bool Contains(User user, Key key)
+        internal static bool Contains(User user, Key key)
         {
             return AvailableLicenseActivations.ContainsKey(user)
                 && AvailableLicenseActivations[user].Keys.Contains(key);
         }
 
-        public static void RegisterUser(User user)
+        internal static void RegisterUser(User user)
         {
             var licenseGroup = new LicenseGroup();
             var generator = new Generator
@@ -63,7 +63,7 @@ namespace CryptoKnight.Server.Core
             }
         }
 
-        public static Key RequestLicenseKey(User user)
+        internal static Key RequestLicenseKey(User user)
         {
             if (string.IsNullOrEmpty(user?.Email)
                 || string.IsNullOrEmpty(user.PasswordHash)) return null;
@@ -73,6 +73,22 @@ namespace CryptoKnight.Server.Core
             var key = AvailableLicenseActivations[user].Keys[index];
             key.Used = true;
             return key;
+        }
+
+        internal static void ShowInfo()
+        {
+            lock (sync)
+            {
+                // TODO: remove this code in an productive environment
+                foreach (var pair in AvailableLicenseActivations)
+                {
+                    Console.WriteLine($"User<email>: {pair.Key.Email}");
+                    foreach (var key in pair.Value.Keys)
+                    {
+                        Console.WriteLine($"-- <key>: {key.Code}");
+                    }
+                }
+            }
         }
     }
 }

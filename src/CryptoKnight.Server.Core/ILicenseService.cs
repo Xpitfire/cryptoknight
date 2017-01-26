@@ -6,5 +6,6 @@ namespace CryptoKnight.Server.Core
     {
         Key RequestLicenseKey(User user);
         void RegisterUser(User user);
+        void ShowInfo();
     }
 }
