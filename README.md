@@ -55,3 +55,8 @@ C << S
 PluginResponse: In case of an successful login, the server side discovered plugins are transmitted to the authenticated client.
 ```
 
+## Encryption / Decryption
+
+The FileKey which consisting of the plugin password and expiration date is encrypted using the license key.
+The PluginResponse is encrypted by an one-time generated password and contains the encrypted plugin.
+This authentication / encryption combination is used to prevent message spoofing.
