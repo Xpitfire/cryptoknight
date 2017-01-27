@@ -7,6 +7,7 @@
 
 The server manages the licenses by creating new licenses for registered users.
 The core features that are provided by the server application are:
+
 * register new users
 * save user data to an encrypted (DPAPI) file
 * load data form encrypted file
@@ -20,6 +21,7 @@ The core features that are provided by the server application are:
 
 The client application connects to the server and requests plugins.
 The core features that are provided by the server application are:
+
 * plugins for plain text encryption and decryption
 * license based authentication system
 * secured sandboxing of the loaded plugins
@@ -28,6 +30,7 @@ The core features that are provided by the server application are:
 ### Plugins
 
 The plugins offer state of the art encryption and decryption algorithms such as:
+
 * Aes :D
 * DES 
 * RC2
