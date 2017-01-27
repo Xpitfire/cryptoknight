@@ -19,7 +19,7 @@ namespace CryptoKnight.Server.Core
         private const int DefaultExpireMinutes = 5;
         private const string KeyTemplate = "kkkk-kkk-kk-k-kk-kkk-kkkk";
         private readonly IAuthService _authService = new DefaultAuthService();
-        private readonly ILicenseService _licenseService = new DefaultLicenseServiceImpl();
+        private readonly ILicenseService _licenseService = new DefaultLicenseService();
         private readonly Generator _generator = new Generator { Template = KeyTemplate };
 
         private readonly IDictionary<TcpSocket, ClientData> _loggedInUsers = new ConcurrentDictionary<TcpSocket, ClientData>();

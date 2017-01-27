@@ -5,11 +5,11 @@ using CryptoKnight.Server.KeyGenerator;
 
 namespace CryptoKnight.Server.Core
 {
-    public class DefaultLicenseServiceImpl : ILicenseService
+    public class DefaultLicenseService : ILicenseService
     {
-        public void RegisterUser(User user)
+        public bool RegisterUser(User user)
         {
-            KeyStore.RegisterUser(user);
+            return KeyStore.RegisterUser(user);
         }
 
         public Key RequestLicenseKey(User user)

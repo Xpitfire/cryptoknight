@@ -43,8 +43,9 @@ namespace CryptoKnight.Server.Core
                 && AvailableLicenseActivations[user].Keys.Contains(key);
         }
 
-        internal static void RegisterUser(User user)
+        internal static bool RegisterUser(User user)
         {
+            if (AvailableLicenseActivations.Keys.Contains(user)) return false;
             var licenseGroup = new LicenseGroup();
             var generator = new Generator
             {
@@ -61,6 +62,7 @@ namespace CryptoKnight.Server.Core
             {
                 File.WriteAllBytes(KeyStoreFileName, protectedData);
             }
+            return true;
         }
 
         internal static Key RequestLicenseKey(User user)

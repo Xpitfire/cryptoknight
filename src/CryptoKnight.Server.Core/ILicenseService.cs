@@ -5,7 +5,7 @@ namespace CryptoKnight.Server.Core
     public interface ILicenseService
     {
         Key RequestLicenseKey(User user);
-        void RegisterUser(User user);
+        bool RegisterUser(User user);
         void ShowInfo();
     }
 }

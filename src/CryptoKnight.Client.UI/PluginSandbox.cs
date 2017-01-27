@@ -35,13 +35,11 @@ namespace CryptoKnight.Client.UI
 
         public static IPlugin LoadAddIn(byte[] addIn, string password)
         {
-            var assembly = Assembly.Load(DataProtection.Decrypt(addIn, password));
+            var assembly = SandboxDomain.Load(DataProtection.Decrypt(addIn, password));
             foreach (var type in assembly.GetTypes())
             {
                 if (!type.GetInterfaces().Contains(typeof(IPlugin))) continue;
-                return SandboxDomain.CreateInstanceAndUnwrap(
-                    assembly.FullName,
-                    type.FullName) as IPlugin;
+                return assembly.CreateInstance(type.FullName) as IPlugin;
             }
             return null;
         }

@@ -23,7 +23,7 @@ namespace CryptoKnight.Server.Test
         [TestMethod]
         public void TestActivations()
         {
-            licencService = new DefaultLicenseServiceImpl();
+            licencService = new DefaultLicenseService();
             for (var i = 0; i < LicenseGroup.MaxLicenseKeys; i++)
             {
                 Assert.IsNotNull(licencService.RequestLicenseKey(Admin));
@@ -34,14 +34,14 @@ namespace CryptoKnight.Server.Test
         [TestMethod]
         public void TestKeyHash()
         {
-            licencService = new DefaultLicenseServiceImpl();
+            licencService = new DefaultLicenseService();
             System.Console.WriteLine(licencService.RequestLicenseKey(User).Code);
         }
 
         [TestMethod]
         public void TestSingleLogin()
         {
-            licencService = new DefaultLicenseServiceImpl();
+            licencService = new DefaultLicenseService();
             authService = new DefaultAuthService();
             var key = licencService.RequestLicenseKey(User);
             Assert.IsTrue(authService.Login(User, key));

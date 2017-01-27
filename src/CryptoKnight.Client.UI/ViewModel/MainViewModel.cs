@@ -9,6 +9,7 @@ using System.Collections.ObjectModel;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace CryptoKnight.Client.UI.ViewModel
 {
@@ -29,10 +30,13 @@ namespace CryptoKnight.Client.UI.ViewModel
         // TODO: remove default user 
         // default user is used to not have to type the mail / password
         // every time 
+
+        private const string DefaultKey = "VXZD-TUOHGUA-VH-SXNBLQK";
+        private const string DefaultPassword = "IZELSY";
         private static readonly User DefaultUser = new User
         {
-            Email = "user@host.com",
-            PasswordHash = "user"
+            Email = "test@host.com",
+            PasswordHash = DefaultPassword.ComputeMd5Hash()
         };
 
         // default endpoint (can also be removed later on)
@@ -101,11 +105,14 @@ namespace CryptoKnight.Client.UI.ViewModel
 
         private FileKey _fileKey;
 
-
         public MainViewModel()
         {
-            User = new UserViewModel(DefaultUser);
+            User = new UserViewModel(DefaultUser)
+            {
+                Password = DefaultPassword
+            };
             Key = new KeyViewModel();
+            Key.Code = DefaultKey;
             EndPoint = new IPEndPointViewModel(DefaultEndpoint);
             Connected = false;
 
@@ -189,7 +196,10 @@ namespace CryptoKnight.Client.UI.ViewModel
         private void OnPluginResponse(PluginResponseMessage message)
         {
             if (_fileKey == null) return;
-            Plugins.Add(new PluginViewModel(PluginSandbox.LoadAddIn(message.Plugin, _fileKey.Password)));
+            if (DateTime.Now > _fileKey.Expire) return; // go defense!
+            Application.Current.Dispatcher.Invoke(() => {
+                Plugins.Add(new PluginViewModel(PluginSandbox.LoadAddIn(message.Plugin, _fileKey.Password)));
+            });
         }
     }
 }

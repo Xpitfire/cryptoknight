@@ -18,7 +18,7 @@ namespace CryptoKnight.Server.Console
         public void Run()
         {
             LicenseServer = new LicenseServer(EndPoint);
-            LicenseService = new DefaultLicenseServiceImpl();
+            LicenseService = new DefaultLicenseService();
             CommandManager = new CommandManager<Program>();
             CommandManager.Commands.Add(new TcpServerManagerCommand());
             CommandManager.Commands.Add(new KeyStoreManagerCommand());

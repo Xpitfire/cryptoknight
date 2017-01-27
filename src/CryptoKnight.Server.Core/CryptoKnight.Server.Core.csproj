@@ -45,7 +45,7 @@
     <Compile Include="ClientData.cs" />
     <Compile Include="DataProtectionApi.cs" />
     <Compile Include="DefaultAuthService.cs" />
-    <Compile Include="DefaultLicenseServiceImpl.cs" />
+    <Compile Include="DefaultLicenseService.cs" />
     <Compile Include="DataProtection.cs" />
     <Compile Include="IAuthService.cs" />
     <Compile Include="ILicenseService.cs" />

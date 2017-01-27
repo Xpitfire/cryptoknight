@@ -77,7 +77,7 @@ namespace CryptoKnight.Client.UI
                 }
 
             }
-            catch (Exception)
+            catch
             {
                 // server sent invalid data
                 server.Close();

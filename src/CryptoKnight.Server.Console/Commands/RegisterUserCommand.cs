@@ -15,13 +15,15 @@ namespace CryptoKnight.Server.Console.Commands
             string email = io.ReadEmail(CommandInfo);
             if (email == null) return;
             var oneWayPassword = new Generator { Template = "kkkkkk" }.CreateKey();
-            io.WriteLine($"Your one-way-password is: {oneWayPassword.Code}");
-            host.LicenseService.RegisterUser(
+            var result = host.LicenseService.RegisterUser(
                 new User
                 {
                     Email = email,
                     PasswordHash = oneWayPassword.Code.ComputeMd5Hash()
                 });
+            io.WriteLine(result 
+                ? $"Your one-way-password is: {oneWayPassword.Code}" 
+                : "Could not create a user!");
         }
     }
 }

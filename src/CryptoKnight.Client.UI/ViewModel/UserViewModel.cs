@@ -18,12 +18,12 @@ namespace CryptoKnight.Client.UI.ViewModel
             }
         }
 
-        private string _passwordHash;
-        public string PasswordHash {
-            get { return _passwordHash; }
+        private string _password;
+        public string Password {
+            get { return _password; }
             set {
                 User.PasswordHash = value?.ComputeMd5Hash();
-                Set(ref _passwordHash, value);
+                Set(ref _password, value);
             }
         }
 
