@@ -6,6 +6,7 @@ using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,11 +32,11 @@ namespace CryptoKnight.Client.UI.ViewModel
         // default user is used to not have to type the mail / password
         // every time 
 
-        private const string DefaultKey = "VXZD-TUOHGUA-VH-SXNBLQK";
-        private const string DefaultPassword = "IZELSY";
+        private const string DefaultKey = "";
+        private const string DefaultPassword = "";
         private static readonly User DefaultUser = new User
         {
-            Email = "test@host.com",
+            Email = "",
             PasswordHash = DefaultPassword.ComputeMd5Hash()
         };
 
@@ -91,7 +92,12 @@ namespace CryptoKnight.Client.UI.ViewModel
 
         public PluginViewModel SelectedPlugin { get; set; }
 
-        public ObservableCollection<PluginViewModel> Plugins { get; set; }
+        private ObservableCollection<PluginViewModel> _plugins;
+        public ObservableCollection<PluginViewModel> Plugins
+        {
+            get { return _plugins; }
+            set { Set(ref _plugins, value); }
+        }
 
         public RelayCommand ConnectCommand { get; }
 
@@ -107,12 +113,8 @@ namespace CryptoKnight.Client.UI.ViewModel
 
         public MainViewModel()
         {
-            User = new UserViewModel(DefaultUser)
-            {
-                Password = DefaultPassword
-            };
+            User = new UserViewModel(DefaultUser);
             Key = new KeyViewModel();
-            Key.Code = DefaultKey;
             EndPoint = new IPEndPointViewModel(DefaultEndpoint);
             Connected = false;
 
@@ -172,12 +174,15 @@ namespace CryptoKnight.Client.UI.ViewModel
         private void LicenseClientOnDisconnected(TcpSocket server)
         {
             Disconnect();
+            Plugins = new ObservableCollection<PluginViewModel>();
+            PluginSandbox.DeleteAppDomain();
         }
 
         private void LicenseClientOnConnected(TcpSocket server)
         {
             Connected = true;
             ConnectionStatus = Properties.Resources.Connected;
+            PluginSandbox.CreateAppDomain();
             _licenseClient.Login(User.User, Key.Key);
         }
 
@@ -201,5 +206,7 @@ namespace CryptoKnight.Client.UI.ViewModel
                 Plugins.Add(new PluginViewModel(PluginSandbox.LoadAddIn(message.Plugin, _fileKey.Password)));
             });
         }
+
     }
+    
 }

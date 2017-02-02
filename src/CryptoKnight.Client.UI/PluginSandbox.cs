@@ -12,9 +12,14 @@ namespace CryptoKnight.Client.UI
     public class PluginSandbox
     {
         private const string SandboxDomainName = "PluginSandboxDomain";
-        private static readonly AppDomain SandboxDomain;
+        private static AppDomain SandboxDomain;
 
         static PluginSandbox()
+        {
+            CreateAppDomain();
+        }
+
+        public static void CreateAppDomain()
         {
             var permSet = new PermissionSet(PermissionState.None);
             permSet.AddPermission(new SecurityPermission(SecurityPermissionFlag.Execution));
@@ -31,6 +36,11 @@ namespace CryptoKnight.Client.UI
                 ptInfo,
                 permSet,
                 strongName);
+        }
+
+        public static void DeleteAppDomain()
+        {
+            AppDomain.Unload(SandboxDomain);
         }
 
         public static IPlugin LoadAddIn(byte[] addIn, string password)

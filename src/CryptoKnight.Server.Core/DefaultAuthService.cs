@@ -8,7 +8,7 @@ namespace CryptoKnight.Server.Core
     public class DefaultAuthService : IAuthService
     {
         private readonly int _maxLicenseActivations = 0;
-        public int MaxActivations => 10;
+        public int MaxActivations => 2;
 
         public DefaultAuthService()
         {
